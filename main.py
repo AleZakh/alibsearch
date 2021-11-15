@@ -12,8 +12,9 @@ logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s - 
 
 def alib(url, inquire):  # parsing the 1st or/and next pages
     result = []
-    res = requests.get(url + convert1251(inquire))
-    print(url + convert1251(inquire))
+    inquire = convert1251(inquire)
+    res = requests.get(url + inquire)
+    print(url + inquire)
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.text, 'html.parser')
 
