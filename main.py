@@ -8,7 +8,7 @@ import requests
 logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s -  %(message)s')
 
 
-def alib(url, inquire): #parsing the 1st or/and next pages
+def alib(url, inquire):  # parsing the 1st or/and next pages
     result = []
     res = requests.get(url + convert1251(inquire))
     print(url + convert1251(inquire))
@@ -17,14 +17,14 @@ def alib(url, inquire): #parsing the 1st or/and next pages
 
     arrPages = []
     for a in soup.find_all('a', href=True):
-        if 'find3' in a['href']: #finding other pages of search result, if there is only 1 page arrPages=[]
+        if 'find3' in a['href']:  # finding other pages of search result, if there is only 1 page arrPages=[]
             arrPages.append(a['href'])
     print(arrPages)
 
     n = 0
     while True:
         result.append(searchpage(soup))
-        if len(arrPages) < 1: #if there is more than one pages of search result
+        if len(arrPages) < 1:  # if there is more than one pages of search result
             break
         else:
             res = requests.get('https:' + arrPages[n])
@@ -37,7 +37,7 @@ def alib(url, inquire): #parsing the 1st or/and next pages
     return result
 
 
-def searchpage(curSoup): #parsing one webpage to list
+def searchpage(curSoup):  # parsing one webpage to list
     nameRegex = re.compile(r'<b>(.*?)</b>')  # Name of position
     isbnRegex = re.compile(r'\(ISBN: (.*?)\)')  # ISBN number
     priceRegex = re.compile(r'Цена: (.*) руб.')  # price
@@ -85,7 +85,7 @@ def convert1251(string):  # convert utf-8 query to microsoft 1251
 
 
 URL = 'https://www.alib.ru/find3.php4?tfind='
-query = input() # input query in russian
+query = input()  # input query in russian
 resultList = alib(URL, query)
 
 # Write resultList to txt file named as query
