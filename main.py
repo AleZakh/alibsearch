@@ -18,10 +18,8 @@ def alib(url, inquire):  # parsing the 1st or/and next pages
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.text, 'html.parser')
 
-    arrPages = []
-    for a in soup.find_all('a', href=True):
-        if 'find3' in a['href']:  # finding other pages of search result, if there is only 1 page arrPages=[]
-            arrPages.append(a['href'])
+    # finding other pages of search result, if there is only 1 page arrPages=[]
+    arrPages = [a['href'] for a in soup.find_all('a', href=True) if 'find3' in a['href']]
     print(arrPages)
 
     n = 0
