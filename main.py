@@ -59,7 +59,7 @@ def searchpage(curSoup):  # parsing one webpage to list
             price = str(priceSearch.group(1))
             buyURL = str(buyURLSearch.group(1))
             ISBN = str(ISBNSearch.group(1))
-        except Exception as err:
+        except:
             pass
 
         try:
@@ -67,7 +67,7 @@ def searchpage(curSoup):  # parsing one webpage to list
             logging.debug(str(priceSearch.group(1)))
             logging.debug(str(buyURLSearch.group(1)))
             logging.debug(str(ISBNSearch.group(1)))
-        except Exception as err:
+        except:
             logging.debug("Элемент не найден")
 
         pageResult.append([name, ISBN, price, buyURL])
