@@ -80,8 +80,7 @@ def convert1251(string):  # convert utf-8 query to microsoft 1251
     string = string.encode('cp1251')
     string = str(string)
     string = string[2:(len(string) - 1)]
-    string = string.split('\\x')
-    string = '%'.join(string)
+    string = string.replace('\\x', '%')
     return string
 
 
