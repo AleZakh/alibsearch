@@ -75,7 +75,7 @@ def main():
 
     # Write resultList to txt file named as query
     with open(query + '.txt', 'w', encoding='utf-8') as resultFile:
-        resultFile.writelines('%s\n' % result for result in resultList)
+        resultFile.writelines(f'{result}\n' for result in resultList)
 
 
 if __name__ == '__main__':
