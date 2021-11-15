@@ -69,7 +69,7 @@ def searchpage(curSoup):  # parsing one webpage to list
             logging.debug(str(buyURLSearch.group(1)))
             logging.debug(str(ISBNSearch.group(1)))
         except:
-            logging.debug("Элемент не найден")
+            logging.debug('Элемент не найден')
 
         pageResult.append([name, ISBN, price, buyURL])
         i = i + 1
@@ -92,7 +92,7 @@ def main():
 
     # Write resultList to txt file named as query
     with open(query + '.txt', 'w') as resultFile:
-        resultFile.writelines("%s\n" % result for result in resultList)
+        resultFile.writelines('%s\n' % result for result in resultList)
 
 
 if __name__ == '__main__':
