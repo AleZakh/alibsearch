@@ -17,23 +17,17 @@ def alib(url, inquire):  # parsing the 1st or/and next pages
     print(url + inquire)
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.text, 'html.parser')
+    result.append(searchpage(soup))
 
     # finding other pages of search result, if there is only 1 page arrPages=[]
     arrPages = [a['href'] for a in soup.find_all('a', href=True) if 'find3' in a['href']]
     print(arrPages)
 
-    n = 0
-    while True:
+    for page in arrPages:
+        res = requests.get('https:' + page)
+        res.raise_for_status()
+        soup = bs4.BeautifulSoup(res.text, 'html.parser')
         result.append(searchpage(soup))
-        if len(arrPages) < 1:  # if there is more than one pages of search result
-            break
-        else:
-            res = requests.get('https:' + arrPages[n])
-            res.raise_for_status()
-            soup = bs4.BeautifulSoup(res.text, 'html.parser')
-            n = n + 1
-            if n == len(arrPages):
-                break
 
     return result
 
