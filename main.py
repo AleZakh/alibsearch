@@ -74,7 +74,7 @@ def main():
     resultList = alib(URL, query)
 
     # Write resultList to txt file named as query
-    with open(query + '.txt', 'w') as resultFile:
+    with open(query + '.txt', 'w', encoding='utf-8') as resultFile:
         resultFile.writelines('%s\n' % result for result in resultList)
 
 
