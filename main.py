@@ -17,8 +17,7 @@ urlRegex = re.compile(r'"(.*)"')  # Position URL
 
 def alib(url, inquire):  # parsing the 1st or/and next pages
     result = []
-    inquire = convert1251(inquire)
-    res = requests.get(url + inquire)
+    res = requests.get(url, params={'tfind': inquire.encode('cp1251')})
     logging.info(url + inquire)
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.text, 'html.parser')
@@ -69,16 +68,8 @@ def searchpage(curSoup):  # parsing one webpage to list
     return pageResult
 
 
-def convert1251(string):  # convert utf-8 query to microsoft 1251
-    string = string.encode('cp1251')
-    string = str(string)
-    string = string[2:(len(string) - 1)]
-    string = string.replace('\\x', '%')
-    return string
-
-
 def main():
-    URL = 'https://www.alib.ru/find3.php4?tfind='
+    URL = 'https://www.alib.ru/find3.php4'
     query = input('Query?')  # input query in russian
     resultList = alib(URL, query)
 
