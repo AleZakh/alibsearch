@@ -9,6 +9,11 @@ import requests
 
 logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s -  %(message)s')
 
+nameRegex = re.compile(r'<b>(.*?)</b>')  # Name of position
+isbnRegex = re.compile(r'\(ISBN: (.*?)\)')  # ISBN number
+priceRegex = re.compile(r'Цена: (.*) руб.')  # price
+urlRegex = re.compile(r'"(.*)"')  # Position URL
+
 
 def alib(url, inquire):  # parsing the 1st or/and next pages
     result = []
@@ -33,11 +38,6 @@ def alib(url, inquire):  # parsing the 1st or/and next pages
 
 
 def searchpage(curSoup):  # parsing one webpage to list
-    nameRegex = re.compile(r'<b>(.*?)</b>')  # Name of position
-    isbnRegex = re.compile(r'\(ISBN: (.*?)\)')  # ISBN number
-    priceRegex = re.compile(r'Цена: (.*) руб.')  # price
-    urlRegex = re.compile(r'"(.*)"')  # Position URL
-
     i = 2
     pageResult = []
     while curSoup.select('body > p:nth-of-type(' + str(i) + ') > b'):
