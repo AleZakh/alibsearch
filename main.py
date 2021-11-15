@@ -77,8 +77,7 @@ def searchpage(curSoup):  # parsing one webpage to list
 
 
 def convert1251(string):  # convert utf-8 query to microsoft 1251
-    string = bytes(string, 'utf-8')
-    string = string.decode('utf-8').encode('cp1251')
+    string = string.encode('cp1251')
     string = str(string)
     string = string[2:(len(string) - 1)]
     string = string.split('\\x')
