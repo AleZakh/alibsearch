@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Searching books on alib.ru and scraping search results into txt file
 
 import bs4
