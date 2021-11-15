@@ -84,10 +84,15 @@ def convert1251(string):  # convert utf-8 query to microsoft 1251
     return string
 
 
-URL = 'https://www.alib.ru/find3.php4?tfind='
-query = input()  # input query in russian
-resultList = alib(URL, query)
+def main():
+    URL = 'https://www.alib.ru/find3.php4?tfind='
+    query = input()  # input query in russian
+    resultList = alib(URL, query)
 
-# Write resultList to txt file named as query
-with open(query + '.txt', 'w') as resultFile:
-    resultFile.writelines("%s\n" % result for result in resultList)
+    # Write resultList to txt file named as query
+    with open(query + '.txt', 'w') as resultFile:
+        resultFile.writelines("%s\n" % result for result in resultList)
+
+
+if __name__ == '__main__':
+    main()
