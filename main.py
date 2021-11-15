@@ -87,7 +87,7 @@ def convert1251(string):  # convert utf-8 query to microsoft 1251
 
 def main():
     URL = 'https://www.alib.ru/find3.php4?tfind='
-    query = input()  # input query in russian
+    query = input('Query?')  # input query in russian
     resultList = alib(URL, query)
 
     # Write resultList to txt file named as query
