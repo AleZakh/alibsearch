@@ -6,6 +6,7 @@ import logging
 import re
 from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Optional, Generator
 
 import requests
 import requests.adapters
@@ -21,7 +22,7 @@ PRICE_REGEX = re.compile(r'Цена: (.*) руб.')  # price
 URL_FILTER_REGEX = re.compile('find3')
 
 
-def alib(url, query):  # parsing the 1st or/and next pages
+def alib(url: str, query: str) -> Generator[Book]:  # parsing the 1st or/and next pages
     with requests.Session() as ses:
         ses.mount('http://', requests.adapters.HTTPAdapter(pool_maxsize=MAX_PARALLEL))
         ses.mount('https://', requests.adapters.HTTPAdapter(pool_maxsize=MAX_PARALLEL))
@@ -29,7 +30,7 @@ def alib(url, query):  # parsing the 1st or/and next pages
         yield from get_books(res, ses=ses)
 
 
-def get_books(res, ses=None):
+def get_books(res: requests.Response, ses: Optional[requests.Session] = None) -> Generator[Book]:
     logging.info(res.url)
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.text, 'html.parser')
@@ -47,10 +48,11 @@ def get_books(res, ses=None):
             yield from get_books(res=res)
 
 
-def search_page(soup):  # parsing one webpage to list
+def search_page(soup: bs4.BeautifulSoup) -> Generator[Book]:  # parsing one webpage to list
+    ent: bs4.Tag
     for ent in soup.select(f'body > p:has(a[href*="bs.php"])'):
         name = re.sub(r'\s+', ' ', ent.b.text.strip())  # book name extraction and cleaning
-        buy_url = ent.select_one('a:has(b)')['href']
+        buy_url: str = ent.select_one('a:has(b)')['href']
 
         isbn_search = ISBN_REGEX.search(ent.text)
         price_search = PRICE_REGEX.search(ent.text)
