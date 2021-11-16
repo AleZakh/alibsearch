@@ -17,6 +17,7 @@ nameRegex = re.compile(r'<b>(.*?)</b>')  # Name of position
 isbnRegex = re.compile(r'\(ISBN: (.*?)\)')  # ISBN number
 priceRegex = re.compile(r'Цена: (.*) руб.')  # price
 urlRegex = re.compile(r'"(.*)"')  # Position URL
+url_filter = re.compile('find3')
 
 
 def alib(url, inquire):  # parsing the 1st or/and next pages
@@ -27,7 +28,7 @@ def alib(url, inquire):  # parsing the 1st or/and next pages
     result = searchpage(soup)
 
     # finding other pages of search result, if there is only 1 page arrPages=[]
-    arrPages = [a['href'] for a in soup.find_all('a', href=True) if 'find3' in a['href']]
+    arrPages = [a['href'] for a in soup.find_all('a', href=url_filter)]
     logging.info(arrPages)
 
     for page in arrPages:
