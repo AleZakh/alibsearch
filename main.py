@@ -16,12 +16,11 @@ urlRegex = re.compile(r'"(.*)"')  # Position URL
 
 
 def alib(url, inquire):  # parsing the 1st or/and next pages
-    result = []
     res = requests.get(url, params={'tfind': inquire.encode('cp1251')})
     logging.info(url + inquire)
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.text, 'html.parser')
-    result.extend(searchpage(soup))
+    result = searchpage(soup)
 
     # finding other pages of search result, if there is only 1 page arrPages=[]
     arrPages = [a['href'] for a in soup.find_all('a', href=True) if 'find3' in a['href']]
