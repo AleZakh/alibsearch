@@ -18,18 +18,19 @@ PRICE_REGEX = re.compile(r'Цена: (.*) руб.')  # price
 URL_FILTER_REGEX = re.compile('find3')
 
 
-def alib(url, inquire):  # parsing the 1st or/and next pages
-    books = get_page(url=url, params={'tfind': inquire.encode('cp1251')})
+def alib(url, query):  # parsing the 1st or/and next pages
+    with requests.Session() as ses:
+        books = get_page(url=url, ses=ses, params={'tfind': query.encode('cp1251')})
 
-    extra_pages = next(books)
-    yield from books
+        extra_pages = next(books)
+        yield from books
 
-    for page in extra_pages:
-        yield from get_page(f'https:{page}')
+        for page in extra_pages:
+            yield from get_page(url=f'https:{page}', ses=ses)
 
 
-def get_page(url, params=None):
-    res = requests.get(url, params=params)
+def get_page(url, ses, params=None):
+    res = ses.get(url, params=params, verify=r'C:\Users\pstroganov\cert\usergate-ssl-inspection.pem')
 
     logging.info(res.url)
     res.raise_for_status()
@@ -43,7 +44,7 @@ def get_page(url, params=None):
 
 def search_page(soup):  # parsing one webpage to list
     for ent in soup.select(f'body > p:has(a[href*="bs.php"])'):
-        name = ent.b.text
+        name = re.sub(r'\s+', ' ', ent.b.text.strip())
         buy_url = ent.select_one('a:has(b)')['href']
 
         isbn_search = ISBN_REGEX.search(ent.text)
