@@ -8,12 +8,14 @@ from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
+import requests.adapters
 import bs4
 
 logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s -  %(message)s')
 
 Book = namedtuple('Book', ['name', 'isbn', 'price', 'buy_url'])
 
+MAX_PARALLEL = 500
 ISBN_REGEX = re.compile(r'\(ISBN: (.*?)\)')  # ISBN number
 PRICE_REGEX = re.compile(r'Цена: (.*) руб.')  # price
 URL_FILTER_REGEX = re.compile('find3')
@@ -21,6 +23,8 @@ URL_FILTER_REGEX = re.compile('find3')
 
 def alib(url, query):  # parsing the 1st or/and next pages
     with requests.Session() as ses:
+        ses.mount('http://', requests.adapters.HTTPAdapter(pool_maxsize=MAX_PARALLEL))
+        ses.mount('https://', requests.adapters.HTTPAdapter(pool_maxsize=MAX_PARALLEL))
         res = ses.get(url, params={'tfind': query.encode('cp1251')})
         yield from get_books(res, ses=ses)
 
@@ -34,7 +38,7 @@ def get_books(res, ses=None):
     if ses:
         pages_links = soup.find_all('a', href=URL_FILTER_REGEX)
         if len(pages_links) > 1:
-            with ThreadPoolExecutor(min(len(pages_links), 500)) as ex:
+            with ThreadPoolExecutor(min(len(pages_links), MAX_PARALLEL)) as ex:
                 futures = (ex.submit(ses.get, f'https:{page["href"]}') for page in pages_links)
                 for future in as_completed(futures):
                     yield from get_books(res=future.result())
