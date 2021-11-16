@@ -13,11 +13,11 @@ logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s - 
 
 Book = namedtuple('Book', ['name', 'isbn', 'price', 'buy_url'])
 
-nameRegex = re.compile(r'<b>(.*?)</b>')  # Name of position
-isbnRegex = re.compile(r'\(ISBN: (.*?)\)')  # ISBN number
-priceRegex = re.compile(r'Цена: (.*) руб.')  # price
-urlRegex = re.compile(r'"(.*)"')  # Position URL
-url_filter = re.compile('find3')
+NAME_REGEX = re.compile(r'<b>(.*?)</b>')  # Name of position
+ISBN_REGEX = re.compile(r'\(ISBN: (.*?)\)')  # ISBN number
+PRICE_REGEX = re.compile(r'Цена: (.*) руб.')  # price
+URL_REGEX = re.compile(r'"(.*)"')  # Position URL
+URL_FILTER_REGEX = re.compile('find3')
 
 
 def alib(url, inquire):  # parsing the 1st or/and next pages
@@ -28,7 +28,7 @@ def alib(url, inquire):  # parsing the 1st or/and next pages
     result = searchpage(soup)
 
     # finding other pages of search result, if there is only 1 page pages is empty
-    pages = (a['href'] for a in soup.find_all('a', href=url_filter))
+    pages = (a['href'] for a in soup.find_all('a', href=URL_FILTER_REGEX))
 
     for page in pages:
         logging.info(page)
@@ -44,10 +44,10 @@ def searchpage(soup):  # parsing one webpage to list
     i = 2
     result = []
     while soup.select('body > p:nth-of-type(' + str(i) + ') > b'):
-        name_search = nameRegex.search(str(soup.select('body > p:nth-of-type(' + str(i) + ')')))
-        isbn_search = isbnRegex.search(str(soup.select('body > p:nth-of-type(' + str(i) + ')')))
-        price_search = priceRegex.search(str(soup.select('body > p:nth-of-type(' + str(i) + ')')))
-        buy_url_search = urlRegex.search(str(soup.select('body > p:nth-of-type(' + str(i) + ')>a:nth-child(4)')))
+        name_search = NAME_REGEX.search(str(soup.select('body > p:nth-of-type(' + str(i) + ')')))
+        isbn_search = ISBN_REGEX.search(str(soup.select('body > p:nth-of-type(' + str(i) + ')')))
+        price_search = PRICE_REGEX.search(str(soup.select('body > p:nth-of-type(' + str(i) + ')')))
+        buy_url_search = URL_REGEX.search(str(soup.select('body > p:nth-of-type(' + str(i) + ')>a:nth-child(4)')))
 
         name, price, buy_url, isbn = 0, 0, 0, 0
         try:
