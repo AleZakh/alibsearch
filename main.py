@@ -41,33 +41,18 @@ def alib(url, inquire):  # parsing the 1st or/and next pages
 
 
 def searchpage(soup):  # parsing one webpage to list
-    i = 2
     result = []
-    while soup.select('body > p:nth-of-type(' + str(i) + ') > b'):
-        name_search = NAME_REGEX.search(soup.select(f'body > p:nth-of-type({i})')[0])
-        isbn_search = ISBN_REGEX.search(soup.select(f'body > p:nth-of-type({i})')[0])
-        price_search = PRICE_REGEX.search(soup.select(f'body > p:nth-of-type({i})')[0])
-        buy_url_search = URL_REGEX.search(soup.select(f'body > p:nth-of-type({i})>a:nth-child(4)')[0])
+    for ent in soup.select(f'body > p:has(a[href*="bs.php"])'):
+        name = ent.b.text
+        buy_url = ent.select_one('a:has(b)')['href']
 
-        name, price, buy_url, isbn = 0, 0, 0, 0
-        try:
-            name = str(name_search.group(1))
-            price = str(price_search.group(1))
-            buy_url = str(buy_url_search.group(1))
-            isbn = str(isbn_search.group(1))
-        except:
-            pass
+        isbn_search = ISBN_REGEX.search(ent.text)
+        price_search = PRICE_REGEX.search(ent.text)
 
-        try:
-            logging.debug(str(name_search.group(1)))
-            logging.debug(str(price_search.group(1)))
-            logging.debug(str(buy_url_search.group(1)))
-            logging.debug(str(isbn_search.group(1)))
-        except:
-            logging.debug('Элемент не найден')
+        isbn = isbn_search.group(1) if isbn_search else None
+        price = price_search.group(1) if price_search else None
 
         result.append(Book(name, isbn, price, buy_url))
-        i = i + 1
 
     return result
 
