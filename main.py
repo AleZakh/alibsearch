@@ -27,11 +27,11 @@ def alib(url, inquire):  # parsing the 1st or/and next pages
     soup = bs4.BeautifulSoup(res.text, 'html.parser')
     result = searchpage(soup)
 
-    # finding other pages of search result, if there is only 1 page arrPages=[]
-    arrPages = [a['href'] for a in soup.find_all('a', href=url_filter)]
-    logging.info(arrPages)
+    # finding other pages of search result, if there is only 1 page pages is empty
+    pages = (a['href'] for a in soup.find_all('a', href=url_filter))
 
-    for page in arrPages:
+    for page in pages:
+        logging.info(page)
         res = requests.get('https:' + page)
         res.raise_for_status()
         soup = bs4.BeautifulSoup(res.text, 'html.parser')
