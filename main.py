@@ -20,31 +20,27 @@ URL_FILTER_REGEX = re.compile('find3')
 
 def alib(url, query):  # parsing the 1st or/and next pages
     with requests.Session() as ses:
-        books = get_page(url=url, ses=ses, params={'tfind': query.encode('cp1251')})
-
-        extra_pages = next(books)
-        yield from books
-
-        for page in extra_pages:
-            yield from get_page(url=f'https:{page}', ses=ses)
+        yield from get_books(url=url, ses=ses, params={'tfind': query.encode('cp1251')})
 
 
-def get_page(url, ses, params=None):
-    res = ses.get(url, params=params, verify=r'C:\Users\pstroganov\cert\usergate-ssl-inspection.pem')
+def get_books(url, ses, params=None):
+    res = ses.get(url, params=params)
 
     logging.info(res.url)
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.text, 'html.parser')
+    yield from search_page(soup)
 
     if params:
-        yield (a['href'] for a in soup.find_all('a', href=URL_FILTER_REGEX))
-
-    yield from search_page(soup)
+        pages_links = soup.find_all('a', href=URL_FILTER_REGEX)
+        pages_links = (a['href'] for a in pages_links)
+        for page in pages_links:
+            yield from get_books(url=f'https:{page}', ses=ses)
 
 
 def search_page(soup):  # parsing one webpage to list
     for ent in soup.select(f'body > p:has(a[href*="bs.php"])'):
-        name = re.sub(r'\s+', ' ', ent.b.text.strip())
+        name = re.sub(r'\s+', ' ', ent.b.text.strip())  # book name extraction and cleaning
         buy_url = ent.select_one('a:has(b)')['href']
 
         isbn_search = ISBN_REGEX.search(ent.text)
