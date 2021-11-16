@@ -5,6 +5,7 @@
 import logging
 import re
 from collections import namedtuple
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 import bs4
@@ -20,22 +21,26 @@ URL_FILTER_REGEX = re.compile('find3')
 
 def alib(url, query):  # parsing the 1st or/and next pages
     with requests.Session() as ses:
-        yield from get_books(url=url, ses=ses, params={'tfind': query.encode('cp1251')})
+        res = ses.get(url, params={'tfind': query.encode('cp1251')})
+        yield from get_books(res, ses=ses)
 
 
-def get_books(url, ses, params=None):
-    res = ses.get(url, params=params)
-
+def get_books(res, ses=None):
     logging.info(res.url)
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.text, 'html.parser')
     yield from search_page(soup)
 
-    if params:
+    if ses:
         pages_links = soup.find_all('a', href=URL_FILTER_REGEX)
-        pages_links = (a['href'] for a in pages_links)
-        for page in pages_links:
-            yield from get_books(url=f'https:{page}', ses=ses)
+        if len(pages_links) > 1:
+            with ThreadPoolExecutor(min(len(pages_links), 500)) as ex:
+                futures = (ex.submit(ses.get, f'https:{page["href"]}') for page in pages_links)
+                for future in as_completed(futures):
+                    yield from get_books(res=future.result())
+        elif pages_links:
+            res = ses.get(f'https:{pages_links[0]["href"]}')
+            yield from get_books(res=res)
 
 
 def search_page(soup):  # parsing one webpage to list
