@@ -13,10 +13,8 @@ logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s - 
 
 Book = namedtuple('Book', ['name', 'isbn', 'price', 'buy_url'])
 
-NAME_REGEX = re.compile(r'<b>(.*?)</b>')  # Name of position
 ISBN_REGEX = re.compile(r'\(ISBN: (.*?)\)')  # ISBN number
 PRICE_REGEX = re.compile(r'Цена: (.*) руб.')  # price
-URL_REGEX = re.compile(r'"(.*)"')  # Position URL
 URL_FILTER_REGEX = re.compile('find3')
 
 
@@ -28,9 +26,9 @@ def alib(url, inquire):  # parsing the 1st or/and next pages
     result = searchpage(soup)
 
     # finding other pages of search result, if there is only 1 page pages is empty
-    pages = (a['href'] for a in soup.find_all('a', href=URL_FILTER_REGEX))
+    extra_pages = (a['href'] for a in soup.find_all('a', href=URL_FILTER_REGEX))
 
-    for page in pages:
+    for page in extra_pages:
         logging.info(page)
         res = requests.get('https:' + page)
         res.raise_for_status()
