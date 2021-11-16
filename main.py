@@ -19,27 +19,29 @@ URL_FILTER_REGEX = re.compile('find3')
 
 
 def alib(url, inquire):  # parsing the 1st or/and next pages
-    res = requests.get(url, params={'tfind': inquire.encode('cp1251')})
-    logging.info(url + inquire)
-    res.raise_for_status()
-    soup = bs4.BeautifulSoup(res.text, 'html.parser')
-    result = searchpage(soup)
+    books = get_page(url=url, params={'tfind': inquire.encode('cp1251')})
 
-    # finding other pages of search result, if there is only 1 page pages is empty
-    extra_pages = (a['href'] for a in soup.find_all('a', href=URL_FILTER_REGEX))
+    extra_pages = next(books)
+    yield from books
 
     for page in extra_pages:
-        logging.info(page)
-        res = requests.get('https:' + page)
-        res.raise_for_status()
-        soup = bs4.BeautifulSoup(res.text, 'html.parser')
-        result.extend(searchpage(soup))
-
-    return result
+        yield from get_page(f'https:{page}')
 
 
-def searchpage(soup):  # parsing one webpage to list
-    result = []
+def get_page(url, params=None):
+    res = requests.get(url, params=params)
+
+    logging.info(res.url)
+    res.raise_for_status()
+    soup = bs4.BeautifulSoup(res.text, 'html.parser')
+
+    if params:
+        yield (a['href'] for a in soup.find_all('a', href=URL_FILTER_REGEX))
+
+    yield from search_page(soup)
+
+
+def search_page(soup):  # parsing one webpage to list
     for ent in soup.select(f'body > p:has(a[href*="bs.php"])'):
         name = ent.b.text
         buy_url = ent.select_one('a:has(b)')['href']
@@ -50,19 +52,17 @@ def searchpage(soup):  # parsing one webpage to list
         isbn = isbn_search.group(1) if isbn_search else None
         price = price_search.group(1) if price_search else None
 
-        result.append(Book(name, isbn, price, buy_url))
-
-    return result
+        yield Book(name, isbn, price, buy_url)
 
 
 def main():
     url = 'https://www.alib.ru/find3.php4'
     query = input('Query?')  # input query in russian
-    result = alib(url, query)
 
     # Write result to txt file named as query
-    with open(query + '.txt', 'w', encoding='utf-8') as resultFile:
-        resultFile.writelines(f'{result}\n' for result in result)
+    with open(query + '.txt', 'w', encoding='utf-8') as result_file:
+        for book in alib(url, query):
+            result_file.write(f'{book}\n')
 
 
 if __name__ == '__main__':
