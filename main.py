@@ -44,10 +44,10 @@ def searchpage(soup):  # parsing one webpage to list
     i = 2
     result = []
     while soup.select('body > p:nth-of-type(' + str(i) + ') > b'):
-        name_search = NAME_REGEX.search(soup.select('body > p:nth-of-type(' + str(i) + ')')[0])
-        isbn_search = ISBN_REGEX.search(soup.select('body > p:nth-of-type(' + str(i) + ')')[0])
-        price_search = PRICE_REGEX.search(soup.select('body > p:nth-of-type(' + str(i) + ')')[0])
-        buy_url_search = URL_REGEX.search(soup.select('body > p:nth-of-type(' + str(i) + ')>a:nth-child(4)')[0])
+        name_search = NAME_REGEX.search(soup.select(f'body > p:nth-of-type({i})')[0])
+        isbn_search = ISBN_REGEX.search(soup.select(f'body > p:nth-of-type({i})')[0])
+        price_search = PRICE_REGEX.search(soup.select(f'body > p:nth-of-type({i})')[0])
+        buy_url_search = URL_REGEX.search(soup.select(f'body > p:nth-of-type({i})>a:nth-child(4)')[0])
 
         name, price, buy_url, isbn = 0, 0, 0, 0
         try:
