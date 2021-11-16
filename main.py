@@ -11,7 +11,7 @@ import bs4
 
 logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s -  %(message)s')
 
-Book = namedtuple('Book', ['name', 'ISBN', 'price', 'buyURL'])
+Book = namedtuple('Book', ['name', 'isbn', 'price', 'buy_url'])
 
 nameRegex = re.compile(r'<b>(.*?)</b>')  # Name of position
 isbnRegex = re.compile(r'\(ISBN: (.*?)\)')  # ISBN number
@@ -40,46 +40,46 @@ def alib(url, inquire):  # parsing the 1st or/and next pages
     return result
 
 
-def searchpage(curSoup):  # parsing one webpage to list
+def searchpage(soup):  # parsing one webpage to list
     i = 2
-    pageResult = []
-    while curSoup.select('body > p:nth-of-type(' + str(i) + ') > b'):
-        nameSearch = nameRegex.search(str(curSoup.select('body > p:nth-of-type(' + str(i) + ')')))
-        ISBNSearch = isbnRegex.search(str(curSoup.select('body > p:nth-of-type(' + str(i) + ')')))
-        priceSearch = priceRegex.search(str(curSoup.select('body > p:nth-of-type(' + str(i) + ')')))
-        buyURLSearch = urlRegex.search(str(curSoup.select('body > p:nth-of-type(' + str(i) + ')>a:nth-child(4)')))
+    result = []
+    while soup.select('body > p:nth-of-type(' + str(i) + ') > b'):
+        name_search = nameRegex.search(str(soup.select('body > p:nth-of-type(' + str(i) + ')')))
+        isbn_search = isbnRegex.search(str(soup.select('body > p:nth-of-type(' + str(i) + ')')))
+        price_search = priceRegex.search(str(soup.select('body > p:nth-of-type(' + str(i) + ')')))
+        buy_url_search = urlRegex.search(str(soup.select('body > p:nth-of-type(' + str(i) + ')>a:nth-child(4)')))
 
-        name, price, buyURL, ISBN = 0, 0, 0, 0
+        name, price, buy_url, isbn = 0, 0, 0, 0
         try:
-            name = str(nameSearch.group(1))
-            price = str(priceSearch.group(1))
-            buyURL = str(buyURLSearch.group(1))
-            ISBN = str(ISBNSearch.group(1))
+            name = str(name_search.group(1))
+            price = str(price_search.group(1))
+            buy_url = str(buy_url_search.group(1))
+            isbn = str(isbn_search.group(1))
         except:
             pass
 
         try:
-            logging.debug(str(nameSearch.group(1)))
-            logging.debug(str(priceSearch.group(1)))
-            logging.debug(str(buyURLSearch.group(1)))
-            logging.debug(str(ISBNSearch.group(1)))
+            logging.debug(str(name_search.group(1)))
+            logging.debug(str(price_search.group(1)))
+            logging.debug(str(buy_url_search.group(1)))
+            logging.debug(str(isbn_search.group(1)))
         except:
             logging.debug('Элемент не найден')
 
-        pageResult.append(Book(name, ISBN, price, buyURL))
+        result.append(Book(name, isbn, price, buy_url))
         i = i + 1
 
-    return pageResult
+    return result
 
 
 def main():
-    URL = 'https://www.alib.ru/find3.php4'
+    url = 'https://www.alib.ru/find3.php4'
     query = input('Query?')  # input query in russian
-    resultList = alib(URL, query)
+    result = alib(url, query)
 
-    # Write resultList to txt file named as query
+    # Write result to txt file named as query
     with open(query + '.txt', 'w', encoding='utf-8') as resultFile:
-        resultFile.writelines(f'{result}\n' for result in resultList)
+        resultFile.writelines(f'{result}\n' for result in result)
 
 
 if __name__ == '__main__':
