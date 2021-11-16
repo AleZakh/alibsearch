@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 # Searching books on alib.ru and scraping search results into txt file
 
-import bs4
 import logging
 import re
+
 import requests
+import bs4
 
 logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s -  %(message)s')
 
