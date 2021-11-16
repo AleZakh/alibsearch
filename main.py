@@ -4,11 +4,14 @@
 
 import logging
 import re
+from collections import namedtuple
 
 import requests
 import bs4
 
 logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s -  %(message)s')
+
+Book = namedtuple('Book', ['name', 'ISBN', 'price', 'buyURL'])
 
 nameRegex = re.compile(r'<b>(.*?)</b>')  # Name of position
 isbnRegex = re.compile(r'\(ISBN: (.*?)\)')  # ISBN number
@@ -62,7 +65,7 @@ def searchpage(curSoup):  # parsing one webpage to list
         except:
             logging.debug('Элемент не найден')
 
-        pageResult.append([name, ISBN, price, buyURL])
+        pageResult.append(Book(name, ISBN, price, buyURL))
         i = i + 1
 
     return pageResult
