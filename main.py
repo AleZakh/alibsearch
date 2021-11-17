@@ -21,7 +21,7 @@ MAX_PARALLEL = 500
 ISBN_REGEX = re.compile(r'\(ISBN: (.*?)\)')  # ISBN number
 PRICE_REGEX = re.compile(r'Цена: (.*) руб.')  # price
 URL_FILTER_REGEX = re.compile('find3')
-DELAY_REGEX = re.compile(r'Продолжить работу можно через (\d+) секунд')
+DELAY_REGEX = re.compile(r'Продолжить работу можно через (\d+) (\w+)')
 
 
 def alib(url: str, query: str) -> Generator[Book, None, None]:  # parsing the 1st or/and next pages
@@ -56,7 +56,15 @@ def get_page(url: str, ses: requests.Session, params: Optional[dict] = None) -> 
 
     delay_search = DELAY_REGEX.search(res.text)
     if delay_search:
-        sleep(int(delay_search.group(1)) + 1)
+        quantity = int(delay_search.group(1))
+        scale = delay_search.group(2)
+        if scale.startswith('секунд'):
+            scale = 1
+        elif scale.startswith('минут'):
+            scale = 60
+        elif scale.startswith('час'):
+            scale = 60 * 60
+        sleep(quantity * scale + 1)
         get_page(url=url, ses=ses, params=params)
 
     return res
