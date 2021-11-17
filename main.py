@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 # Searching books on alib.ru and scraping search results into txt file
 
+import os
 import logging
 import re
 from collections import namedtuple
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 from typing import Optional, Generator
 from time import sleep
 
@@ -24,19 +25,32 @@ URL_FILTER_REGEX = re.compile('find3')
 DELAY_REGEX = re.compile(r'Продолжить работу можно через (\d+) (\w+)')
 
 
-def alib(url: str, query: str) -> Generator[Book, None, None]:  # parsing the 1st or/and next pages
+def alib(url: str, query: str) -> Generator[Book, None, None]:
+    """
+    Parsing the 1st or/and next pages
+    :param url:
+    :param query:
+    """
     with requests.Session() as ses:
         ses.mount('http://', requests.adapters.HTTPAdapter(pool_maxsize=MAX_PARALLEL))
         ses.mount('https://', requests.adapters.HTTPAdapter(pool_maxsize=MAX_PARALLEL))
         res = ses.get(url, params={'tfind': query.encode('cp1251')})
-        yield from get_books(res, ses=ses)
+        with ProcessPoolExecutor(os.cpu_count() - 1) as p_ex:
+            yield from get_books(res=res, p_ex=p_ex, ses=ses)
 
 
-def get_books(res: requests.Response, ses: Optional[requests.Session] = None) -> Generator[Book, None, None]:
+def get_books(res: requests.Response, p_ex: ProcessPoolExecutor, ses: Optional[requests.Session] = None)\
+        -> Generator[Book, None, None]:
+    """
+    Process pages
+    :param res:
+    :param p_ex:
+    :param ses:
+    """
     logging.info(f'{res.url}\n{res.text[:200]}')
     res.raise_for_status()
     soup = bs4.BeautifulSoup(res.text, 'html.parser')
-    yield from search_page(soup)
+    yield from search_page(soup=soup, p_ex=p_ex)
 
     if ses:
         pages_links = soup.find_all('a', href=URL_FILTER_REGEX)
@@ -44,14 +58,21 @@ def get_books(res: requests.Response, ses: Optional[requests.Session] = None) ->
             with ThreadPoolExecutor(min(len(pages_links), MAX_PARALLEL)) as ex:
                 futures = (ex.submit(get_page, url=f'https:{page["href"]}', ses=ses) for page in pages_links)
                 for future in as_completed(futures):
-                    yield from get_books(res=future.result())
+                    yield from get_books(res=future.result(), p_ex=p_ex)
         elif pages_links:
             for page in pages_links:
                 res = get_page(url=f'https:{page["href"]}', ses=ses)
-                yield from get_books(res=res)
+                yield from get_books(res=res, p_ex=p_ex)
 
 
 def get_page(url: str, ses: requests.Session, params: Optional[dict] = None) -> requests.Response:
+    """
+    Get the page content considering rate limit
+    :param url:
+    :param ses:
+    :param params:
+    :return:
+    """
     res = ses.get(url=url, params=params)
 
     delay_search = DELAY_REGEX.search(res.text)
@@ -70,22 +91,41 @@ def get_page(url: str, ses: requests.Session, params: Optional[dict] = None) -> 
     return res
 
 
-def search_page(soup: bs4.BeautifulSoup) -> Generator[Book, None, None]:  # parsing one webpage to list
-    ent: bs4.Tag
-    for ent in soup.select(f'body > p:has(a[href*="bs.php"])'):
-        name = re.sub(r'\s+', ' ', ent.b.text.strip())  # book name extraction and cleaning
-        buy_url: str = ent.select_one('a:has(b)')['href']
+def search_page(soup: bs4.BeautifulSoup, p_ex: ProcessPoolExecutor) -> Generator[Book, None, None]:
+    """
+    Parsing one webpage to list
+    :param soup:
+    :param p_ex:
+    """
+    tags = soup.select(f'body > p:has(a[href*="bs.php"])')
+    futures = (p_ex.submit(parse_tag, ent) for ent in tags)
+    for future in as_completed(futures):
+        yield future.result()
 
-        isbn_search = ISBN_REGEX.search(ent.text)
-        price_search = PRICE_REGEX.search(ent.text)
 
-        isbn = isbn_search.group(1) if isbn_search else None
-        price = price_search.group(1) if price_search else None
+def parse_tag(tag: bs4.Tag) -> Book:
+    """
+    Parse one entry
+    :param tag:
+    :return:
+    """
+    name = re.sub(r'\s+', ' ', tag.b.text.strip())  # book name extraction and cleaning
+    buy_url: str = tag.select_one('a:has(b)')['href']
 
-        yield Book(name, isbn, price, buy_url)
+    isbn_search = ISBN_REGEX.search(tag.text)
+    price_search = PRICE_REGEX.search(tag.text)
+
+    isbn = isbn_search.group(1) if isbn_search else None
+    price = price_search.group(1) if price_search else None
+
+    return Book(name, isbn, price, buy_url)
 
 
 def main():
+    """
+    Perform search and save result to file
+    :return:
+    """
     url = 'https://www.alib.ru/find3.php4'
     query = input('Query?')  # input query in russian
 
