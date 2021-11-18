@@ -39,8 +39,11 @@ def alib(url: str, query: str) -> Generator[Book, None, None]:
             yield from get_books(res=res, p_ex=p_ex, ses=ses)
 
 
-def get_books(res: requests.Response, p_ex: ProcessPoolExecutor, ses: Optional[requests.Session] = None)\
-        -> Generator[Book, None, None]:
+def get_books(
+        res: requests.Response,
+        p_ex: ProcessPoolExecutor,
+        ses: Optional[requests.Session] = None
+) -> Generator[Book, None, None]:
     """
     Process pages
     :param res:
