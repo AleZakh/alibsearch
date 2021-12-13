@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s - 
 Book = namedtuple('Book', ['name', 'isbn', 'price', 'buy_url'])
 
 ISBN_REGEX = re.compile(r'\(ISBN: (.*?)\)')  # ISBN number
-PRICE_REGEX = re.compile(r'Цена: (.*) руб.')  # price
+PRICE_REGEX = re.compile(r'Цена: (.*?) руб.')  # price
 URL_FILTER_REGEX = re.compile('find3')
 
 
@@ -48,22 +48,22 @@ def searchpage(soup):  # parsing one webpage to list
         price_search = PRICE_REGEX.search(ent.text)
 
         isbn = isbn_search.group(1) if isbn_search else None
-        price = price_search.group(1) if price_search else None
+        price = int(price_search.group(1)) if price_search else None
 
         result.append(Book(name, isbn, price, buy_url))
 
     return result
 
 
-def main():
+def main(query):
     url = 'https://www.alib.ru/find3.php4'
-    query = input('Query?')  # input query in russian
+    #query = input('Query?')  # input query in russian
     result = alib(url, query)
 
     # Write result to txt file named as query
     with open(query + '.txt', 'w', encoding='utf-8') as resultFile:
         resultFile.writelines(f'{result}\n' for result in result)
-
+    return result
 
 if __name__ == '__main__':
     main()
