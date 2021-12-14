@@ -5,9 +5,9 @@
 import logging
 import re
 from collections import namedtuple
-
 import requests
 import bs4
+import pandas as pd
 
 logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s -  %(message)s')
 
@@ -53,6 +53,11 @@ def searchpage(soup):  # parsing one webpage to list
         result.append(Book(name, isbn, price, buy_url))
 
     return result
+
+def minprice(result):
+    price_column=list(zip(*result))[2]
+    min_price=min(price_column)
+    return min_price
 
 
 def main(query):
