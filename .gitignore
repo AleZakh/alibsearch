@@ -264,3 +264,4 @@ dmypy.json
 cython_debug/
 
 /bot_token.txt
+/watchlist.csv

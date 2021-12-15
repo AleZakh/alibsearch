@@ -66,8 +66,8 @@ def main(query):
     result = alib(url, query)
 
     # Write result to txt file named as query
-    with open(query + '.txt', 'w', encoding='utf-8') as resultFile:
-        resultFile.writelines(f'{result}\n' for result in result)
+    # with open(query + '.txt', 'w', encoding='utf-8') as resultFile:
+    #    resultFile.writelines(f'{result}\n' for result in result)
     return result
 
 if __name__ == '__main__':
