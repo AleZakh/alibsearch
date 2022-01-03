@@ -13,13 +13,13 @@ import csv
 
 with open('bot_token.txt') as t:
     token = t.read()
-
-bot = telebot.TeleBot(token, parse_mode=None)
 user_list = []
 
+bot = telebot.TeleBot(token, parse_mode=None)
 
 @bot.message_handler(commands=['help', 'start'])
 def send_welcome(message):
+    user_list.clear()
     user_list.append(message.chat.id)
     msg = bot.reply_to(message, """\
 Hi!
@@ -32,15 +32,15 @@ def second_step(message):
     markup = types.ReplyKeyboardRemove(selective=False)
     user_list.append(message.text)
 
-    if message.text == 'my watchlist':
-        with open('watchlist.csv', 'r', encoding='utf-8') as wl:
-            reader = csv.reader(wl)
-            msg = bot.send_message(message, f"""\
-            Your watchlist:
-            {x for x in reader}
-         """, reply_markup=watchlist_markup())
-        # bot.register_next_step_handler(msg, my_watchlist())
-        return
+    # if message.text == 'my watchlist':
+    #     with open('watchlist.csv', 'r', encoding='utf-8') as wl:
+    #         reader = csv.reader(wl)
+    #         wl_msh=f'{row[2]} for less than {row[3]} rub /n' for row in reader if row[0]==user_list[0]'
+    #         wl_msg='Your watchlist:/n'
+    #         for row in reader:
+    #         msg = bot.send_message(message, wl_msg, reply_markup=watchlist_markup())
+    #     bot.register_next_step_handler(msg, my_watchlist())
+    #     return
 
     msg = bot.reply_to(message, """\
 Input author or/and book name in russian:
@@ -90,6 +90,7 @@ def price_step(message):
             else:
                 show_result(message.chat.id, result, price)
 
+
     except:
         bot.reply_to(message, "oooops, something went wrong. Let's try again")
         restart(message.chat.id)
@@ -135,10 +136,14 @@ def yes_no_markup():
 
 
 def search_add_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2)
-    markup.add(types.KeyboardButton('search'))
-    markup.add(types.KeyboardButton('add to watchlist'))
-    markup.add(types.KeyboardButton('my watchlist'))
+    # markup = types.ReplyKeyboardMarkup(row_width=2)
+    # markup.add(types.KeyboardButton('search'))
+    # markup.add(types.KeyboardButton('add to watchlist'))
+    # markup.add(types.KeyboardButton('my watchlist'))
+    markup = types.InlineKeyboardMarkup(row_width = 2)
+    markup.add(types.InlineKeyboardButton('search', callback_data=0))
+    markup.add(types.InlineKeyboardButton('add to watchlist', callback_data=1))
+    markup.add(types.InlineKeyboardButton('my watchlist', callback_data=2))
     return markup
 
 

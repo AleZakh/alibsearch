@@ -7,7 +7,6 @@ import re
 from collections import namedtuple
 import requests
 import bs4
-import pandas as pd
 
 logging.basicConfig(level=logging.INFO, format=' %(asctime)s -  %(levelname)s -  %(message)s')
 
@@ -46,7 +45,6 @@ def searchpage(soup):  # parsing one webpage to list
 
         isbn_search = ISBN_REGEX.search(ent.text)
         price_search = PRICE_REGEX.search(ent.text)
-
         isbn = isbn_search.group(1) if isbn_search else None
         price = int(price_search.group(1)) if price_search else None
 
@@ -54,21 +52,22 @@ def searchpage(soup):  # parsing one webpage to list
 
     return result
 
+
 def minprice(result):
-    price_column=list(zip(*result))[2]
-    min_price=min(price_column)
+    price_column = list(zip(*result))[2]
+    min_price = min(price_column)
     return min_price
 
 
 def main(query):
     url = 'https://www.alib.ru/find3.php4'
-    #query = input('Query?')  # input query in russian
+    # query = input('Query?')  # input query in russian
     result = alib(url, query)
 
     # Write result to txt file named as query
-    # with open(query + '.txt', 'w', encoding='utf-8') as resultFile:
-    #    resultFile.writelines(f'{result}\n' for result in result)
+    with open(query + '.txt', 'w', encoding='utf-8') as resultFile:
+        resultFile.writelines(f'{result}\n' for result in result)
     return result
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#   main()
