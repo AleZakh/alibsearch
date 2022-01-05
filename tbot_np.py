@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Code for telegram-bor @alibru_search_bot.
 
-import main
+import alib_search
 import telebot
 from telebot import types
 import csv
@@ -73,12 +73,12 @@ def price_step(message):
             add_to_watchlist()
             return
 
-        result = main.main(user_list[2])
+        result = alib_search.main(user_list[2])
 
         if not result:
             bot.send_message(message.chat.id, f'Nothing was found on alib.ru. Try another author or/and book name')
         else:
-            minprice = main.minprice(result)
+            minprice = alib_search.minprice(result)
             user_list.append(minprice)
             if minprice > price:
                 msg = bot.send_message(message.chat.id, f'''

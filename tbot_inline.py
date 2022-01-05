@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 # Code for telegram-bor @alibru_search_bot.
 
-import main
+import alib_search
 import telebot
 from telebot import types
-# import csv
+import csv
 import logging
 
 # import sys
@@ -13,118 +13,133 @@ import logging
 # import time
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-
-with open('bot_token.txt') as t:
-    token = t.read()
 user_dict = {}
 user_result = []
-
-bot = telebot.TeleBot(token, parse_mode=None)
+with open('bot_token.txt') as t:
+    token = t.read()
+    bot = telebot.TeleBot(token, parse_mode=None)
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
     logging.info(call.data)
-    if call.data in ['search', 'add_wl', 'show_wl']:
+    if call.data in ['search', 'add_wl']:
         first_question(call)
+    if call.data == 'show_wl':
+        show_watchlist(call.from_user.id)
+    if call.data == 'clear':
+        clear_watchlist(call.from_user.id)
     if call.data == 'yes':
-        show_result(0)
+        show_result(0,call.from_user.id)
     if call.data == 'return':
-        return_to_start()
+        return_to_start(call.from_user.id)
     try:
-        show_result(int(call.data))
+        show_result(int(call.data),call.from_user.id)
     except Exception as e:
         logging.info(e)
 
 
 @bot.message_handler(func=lambda message: True)
 def send_welcome(message):
-    user_dict['chat_id'] = message.chat.id
+    user_dict[message.chat.id] = {}
+    user_dict[message.chat.id]['chat_id']=message.chat.id
     logging.info(user_dict)
-    bot.reply_to(message, """\
+    msg=bot.reply_to(message, """\
 Hi!
 Do you want to search for books or add one to a watchlist?
 """, reply_markup=search_add_markup())
-
+    user_dict[message.chat.id]['1st_message_id'] = msg.message_id
 
 def first_question(call):
-    user_dict['1st_message_id'] = call.message.message_id
-    user_dict['call'] = call.data
+    user_dict[call.from_user.id]['call'] = call.data
     logging.info(user_dict)
     if call.data == "search" or call.data == "add_wl":
-        msg = bot.send_message(user_dict['chat_id'], 'Input author or/and book name:')
-        user_dict['last_message_id'] = msg.message_id
+        msg = bot.send_message(user_dict[call.from_user.id]['chat_id'], 'Input author or/and book name:')
+        user_dict[call.from_user.id]['last_message_id'] = msg.message_id
         bot.register_next_step_handler(msg, price_step)
-    elif call.data == "show_wl":
-        bot.edit_message_text("You chose: " + user_dict['chat_id'], user_dict['1st_message_id'] + 1,
-                              reply_markup=search_add_markup())
 
 def price_step(message):
     try:
-        user_dict['query'] = message.text
+        user_dict[message.chat.id]['query'] = message.text
         logging.info(user_dict)
         msg = bot.reply_to(message, 'Max price?')
-        user_dict['last_message_id'] = msg.message_id
+        user_dict[message.chat.id]['last_message_id'] = msg.message_id
         bot.register_next_step_handler(msg, result_step)
     except:
-        bot.reply_to(message, "oooops, something went wrong. Let's try again")
+        bot.reply_to(message, "oooops, something went wrong. Let's try again", reply_markup=return_markup())
 
 
 def result_step(message):
     try:
-
         if not message.text.isdigit():
             msg = bot.reply_to(message, 'Price should be a number. So... max price?')
-            user_dict['last_message_id'] = msg.message_id
+            user_dict[message.chat.id]['last_message_id'] = msg.message_id
             bot.register_next_step_handler(msg, result_step)
             return
 
-        bot.send_message(message.chat.id, 'looking for it...')
-        bot.send_chat_action(message.chat.id, 'typing')
-
-        user_dict['price'] = int(message.text)
+        user_dict[message.chat.id]['price'] = int(message.text)
         logging.info(user_dict)
 
-        # if user_list[1] == 'add to watchlist':
-        #     add_to_watchlist()
-        #     return
+        if user_dict[message.chat.id]['call'] == 'add_wl':
+            add_to_watchlist(message)
 
-        user_list = main.main(user_dict['query'])
-        logging.info(user_list)
-        if not user_list:
-            msg=bot.send_message(message.chat.id, f'Nothing was found on alib.ru. Try another author or/and book name')
-            user_dict['last_message_id'] = msg.message_id
-            bot.register_next_step_handler(msg, price_step)
-
-        else:
-            user_dict['min_price'] = main.minprice(user_list)
-            logging.info(user_dict)
-            if user_dict['min_price'] > user_dict['price']:
-                user_result.extend(list(filter(lambda c: c[:][2] <= user_dict['min_price'], user_list)))
-                msg=bot.send_message(user_dict['chat_id'], f'''
-                Nothing was found in your price range (<{user_dict['price']} руб)
-                Minimal price is {user_dict['min_price']}.
-                Show minimal price positions?
-                ''', reply_markup=yes_no_markup())
-                user_dict['last_message_id'] = msg.message_id
-                user_result.extend(list(filter(lambda c: c[:][2] <= user_dict['min_price'], user_list)))
-                user_dict['result_pages'] = len(user_result) // 5 if len(user_result) % 5 == 0 \
-                    else len(user_result) // 5 + 1
-
-            else:
-
-                user_result.extend(list(filter(lambda c: c[:][2] <= user_dict['price'], user_list)))
-                user_dict['result_pages'] = len(user_result) // 5 if len(user_result) % 5 == 0 \
-                    else len(user_result) // 5 + 1
-                show_result(0)
+        if user_dict[message.chat.id]['call'] == 'search':
+            search_result(message)
 
     except Exception as e:
         logging.info(e)
-        bot.reply_to(message, "oooops, something went wrong. Let's try again")
-    #     # restart(message.chat.id)
+        bot.reply_to(message, "oooops, something went wrong. Let's try again", reply_markup=return_markup())
 
 
-def show_result(page_number):
+def add_to_watchlist(msg):
+    with open('watchlist.csv', 'a+', encoding='utf-8', newline='') as wl:
+        writer = csv.writer(wl)
+        writer.writerow([user_dict[msg.chat.id]["chat_id"],
+                         user_dict[msg.chat.id]["query"],
+                         user_dict[msg.chat.id]["price"]])
+        msg = bot.send_message(user_dict[msg.chat.id]["chat_id"], f''' 
+            ✍🏻 {user_dict[msg.chat.id]["query"]} by less then {user_dict[msg.chat.id]["price"]} rub added to watchlist
+            - Database updates every 09:00 and 23:00 (GMT+3)
+            - I inform you, if something in you price range is found.
+                    ''', reply_markup=return_markup())
+        user_dict[msg.chat.id]['last_message_id'] = msg.message_id
+
+
+def search_result(msg):
+    bot.send_message(user_dict[msg.chat.id]['chat_id'], 'looking for it...')
+    bot.send_chat_action(user_dict[msg.chat.id]['chat_id'], 'typing')
+
+    user_list = alib_search.main(user_dict[msg.chat.id]['query'])
+    logging.info(user_list)
+    if not user_list:
+        msg = bot.send_message(user_dict[msg.chat.id]['chat_id'],
+                               f'Nothing was found on alib.ru. Try another author or/and book name')
+        user_dict[msg.chat.id]['last_message_id'] = msg.message_id
+        bot.register_next_step_handler(msg, price_step)
+
+    else:
+        user_dict[msg.chat.id]['min_price'] = alib_search.minprice(user_list)
+        logging.info(user_dict)
+        if user_dict[msg.chat.id]['min_price'] > user_dict[msg.chat.id]['price']:
+            user_result.extend(list(filter(lambda c: c[:][2] <= user_dict[msg.chat.id]['min_price'], user_list)))
+            msg = bot.send_message(user_dict[msg.chat.id]['chat_id'], f'''
+            Nothing was found in your price range (<{user_dict[msg.chat.id]['price']} руб)
+            Minimal price is {user_dict[msg.chat.id]['min_price']}.
+            Show minimal price positions?
+            ''', reply_markup=yes_no_markup())
+            user_dict[msg.chat.id]['last_message_id'] = msg.message_id
+            user_result.extend(list(filter(lambda c: c[:][2] <= user_dict[msg.chat.id]['min_price'], user_list)))
+            user_dict[msg.chat.id]['result_pages'] = len(user_result) // 5 if len(user_result) % 5 == 0 \
+                else len(user_result) // 5 + 1
+
+        else:
+            user_result.extend(list(filter(lambda c: c[:][2] <= user_dict[msg.chat.id]['price'], user_list)))
+            user_dict[msg.chat.id]['result_pages'] = len(user_result) // 5 if len(user_result) % 5 == 0 \
+                else len(user_result) // 5 + 1
+        show_result(0,msg.chat.id)
+
+
+def show_result(page_number,chat_id):
     logging.info(page_number)
     result_message_text = ''
     i = page_number * 5
@@ -132,37 +147,80 @@ def show_result(page_number):
         name = telegram_parser_format(user_result[i][0])
         price = user_result[i][2]
         link = user_result[i][3]
-        result_message_text += u'📔' + f' {name}, price *{price}* rub, [link]({link}) \n \n '
+        result_message_text += f'📔 {name}, price *{price}* rub, [link]({link}) \n \n '
         i = i + 1
-    if 'result_message_id' in user_dict.keys():
+    if 'is_result_msg' in user_dict[chat_id].keys():
         bot.edit_message_text(result_message_text,
-                              message_id=user_dict['result_message_id'],
-                              chat_id=user_dict['chat_id'],
+                              message_id=user_dict[chat_id]['last_message_id'],
+                              chat_id=chat_id,
                               parse_mode='MarkdownV2',
                               disable_web_page_preview=True,
-                              reply_markup=result_markup(page_number))
+                              reply_markup=result_markup(page_number,chat_id))
     else:
-        result_message = bot.send_message(user_dict['chat_id'],
+        result_message = bot.send_message(chat_id,
                                           text=result_message_text,
                                           parse_mode='MarkdownV2',
                                           disable_web_page_preview=True,
-                                          reply_markup=result_markup(page_number))
-        user_dict['last_message_id'] = result_message.message_id
+                                          reply_markup=result_markup(page_number,chat_id))
+        user_dict[chat_id]['last_message_id'] = result_message.message_id
+        user_dict[chat_id]['is_result_msg'] = True
         logging.info(user_dict)
 
 
+def show_watchlist(chat_id):
+    with open('watchlist.csv', newline='', encoding='utf-8') as wl:
+        reader = csv.reader(wl)
+        watchlist = list(reader)
+        logging.info(watchlist)
+        wl_msg_text = ''
+        for row in watchlist:
+            if int(row[0]) == chat_id:
+                wl_msg_text += f'📔 {row[1]}, price *<{row[2]}* rub \n \n '
+        if len(wl_msg_text) > 0:
+            msg = bot.send_message(chat_id,
+                                   text='Your watchlist: \n \n' + wl_msg_text,
+                                   parse_mode='MarkdownV2',
+                                   disable_web_page_preview=True,
+                                   reply_markup=watchlist_markup())
 
-def return_to_start():
-    i=user_dict['1st_message_id']+1
-    while i<=user_dict['last_message_id']+1:
+        else:
+            msg = bot.send_message(chat_id,
+                                   text='Your watchlist is empty',
+                                   reply_markup=return_markup())
+        user_dict[chat_id]['last_message_id'] = msg.message_id
+
+
+def clear_watchlist(chat_id):
+    with open('watchlist.csv', 'r', encoding='utf-8', newline='') as wl1:
+        reader = csv.reader(wl1)
+        wl = list(reader)
+
+    with open('watchlist.csv', 'w', encoding='utf-8', newline='') as wl2:
+        writer = csv.writer(wl2)
+        for row in wl:
+            if int(row[0]) != chat_id:
+                writer.writerow(row)
+
+    msg = bot.send_message(chat_id,
+                           text='Your watchlist is cleared',
+                           reply_markup=return_markup())
+    user_dict[chat_id]['last_message_id'] = msg.message_id
+
+
+def return_to_start(chat_id):
+    i = user_dict[chat_id]['1st_message_id']+1
+    while i <= user_dict[chat_id]['last_message_id'] + 1:
         try:
-            bot.delete_message(chat_id=user_dict['chat_id'], message_id=i)
-            i+=1
+            bot.delete_message(chat_id=user_dict[chat_id]['chat_id'], message_id=i)
+            i += 1
         except:
             i += 1
 
-    user_dict.pop('last_message_id')
+    if 'is_result_msg' in user_dict[chat_id].keys():
+        user_dict[chat_id].pop('is_result_msg')
+    user_dict[chat_id].pop('last_message_id')
     user_result.clear()
+
 
 def search_add_markup():
     markup = types.InlineKeyboardMarkup(row_width=5)
@@ -181,24 +239,32 @@ def yes_no_markup():
 
 def watchlist_markup():
     markup = types.InlineKeyboardMarkup(row_width=2)
-    markup.add(types.InlineKeyboardButton('clear all', callback_data='clear'))
-    markup.add(types.InlineKeyboardButton('return', callback_data='return'))
+    markup.row(types.InlineKeyboardButton('clear all', callback_data='clear'),
+               types.InlineKeyboardButton('return', callback_data='return'))
     return markup
 
 
-def result_markup(cur_page):
-    logging.info(str(cur_page) + ' of ' + str(user_dict['result_pages'] - 1))
+def result_markup(cur_page,chat_id):
+    logging.info(str(cur_page) + ' of ' + str(user_dict[chat_id]['result_pages'] - 1))
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.row(types.InlineKeyboardButton('1<<', callback_data='0') if cur_page >= 2
                else types.InlineKeyboardButton('-', callback_data=' '),
                types.InlineKeyboardButton(f'{cur_page}<', callback_data=str(cur_page - 1)) if cur_page > 0
                else types.InlineKeyboardButton('-', callback_data=' '),
                types.InlineKeyboardButton(f'>{cur_page + 2}', callback_data=cur_page + 1)
-               if cur_page < user_dict['result_pages'] - 1
+               if cur_page < user_dict[chat_id]['result_pages'] - 1
                else types.InlineKeyboardButton('-', callback_data=' '),
-               types.InlineKeyboardButton(f'>>{user_dict["result_pages"]}', callback_data=user_dict["result_pages"] - 1)
-               if cur_page < user_dict['result_pages'] - 1
+               types.InlineKeyboardButton(f'>>{user_dict[chat_id]["result_pages"]}',
+                                          callback_data=user_dict[chat_id]["result_pages"] - 1)
+               if cur_page < user_dict[chat_id]['result_pages'] - 1
                else types.InlineKeyboardButton('-', callback_data=' '))
+    markup.row(types.InlineKeyboardButton('return', callback_data='return'))
+
+    return markup
+
+
+def return_markup():
+    markup = types.InlineKeyboardMarkup(row_width=2)
     markup.row(types.InlineKeyboardButton('return', callback_data='return'))
 
     return markup
