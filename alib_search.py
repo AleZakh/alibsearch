@@ -69,5 +69,6 @@ def main(query):
     #     resultFile.writelines(f'{result}\n' for result in result)
     return result
 
+
 if __name__ == '__main__':
-   main()
+    main()

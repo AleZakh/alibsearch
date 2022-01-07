@@ -10,15 +10,16 @@ import logging
 from threading import Thread
 import schedule
 import time
-
-# import sys
+from boto.s3.connection import S3Connection
+import os
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 user_dict = {}
 user_result = []
 
-#with open('bot_token.txt') as t:
+# with open('bot_token.txt') as t:
 #    token = t.read()
+token = S3Connection(os.environ['token'])
 bot = telebot.TeleBot(token, parse_mode=None)
 
 
@@ -280,7 +281,9 @@ def telegram_parser_format(txt):
         txt = txt.replace(i, '\\' + i)
     return txt
 
+
 bot.infinity_polling()
+
 
 def watchlist_search():
     with open('watchlist.csv', newline='', encoding='utf-8') as wl:
@@ -304,14 +307,16 @@ def watchlist_search():
     except Exception as e:
         logging.info(e)
 
+
 def schedule_checker():
     while True:
         schedule.run_pending()
         time.sleep(60)
+
 
 if __name__ == "__main__":
     schedule.every().day.at("22:00").do(watchlist_search())
     schedule.every().day.at("7:00").do(watchlist_search())
     Thread(target=schedule_checker).start()
 
-    #server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+    # server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
