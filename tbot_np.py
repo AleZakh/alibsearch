@@ -11,8 +11,8 @@ import csv
 # import time
 
 
-with open('bot_token.txt') as t:
-    token = t.read()
+#with open('bot_token.txt') as t:
+#    token = t.read()
 user_list = []
 
 bot = telebot.TeleBot(token, parse_mode=None)

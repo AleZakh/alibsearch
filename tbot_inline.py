@@ -17,8 +17,8 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 user_dict = {}
 user_result = []
 
-with open('bot_token.txt') as t:
-    token = t.read()
+#with open('bot_token.txt') as t:
+#    token = t.read()
 bot = telebot.TeleBot(token, parse_mode=None)
 
 
