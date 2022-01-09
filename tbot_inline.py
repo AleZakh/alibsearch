@@ -338,4 +338,4 @@ def webhook():
     bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
     return "!", 200
 
-bot.infinity_polling()
+#bot.infinity_polling()
