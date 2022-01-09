@@ -317,9 +317,9 @@ def schedule_checker():
 
 
 if __name__ == "__main__":
-    schedule.every().day.at("22:00").do(watchlist_search())
-    schedule.every().day.at("7:00").do(watchlist_search())
-    Thread(target=schedule_checker).start()
+#    schedule.every().day.at("22:00").do(watchlist_search())
+#    schedule.every().day.at("7:00").do(watchlist_search())
+#    Thread(target=schedule_checker).start()
 
     server.debug = True
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
