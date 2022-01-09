@@ -1,1 +1,1 @@
-worker: python3 tbot_inline.py
+web: python3 tbot_inline.py

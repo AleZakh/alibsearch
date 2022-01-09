@@ -16,16 +16,15 @@ from flask import Flask, request
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-PORT = int(os.environ.get('PORT', 5000))
-
-token = os.environ['token']
-logging.info(token)
-
 # with open('bot_token.txt') as t:
 #    token = t.read()
 
+token = os.environ['token']
+logging.info(token)
 bot = telebot.TeleBot(token, parse_mode=None)
+
 server = Flask(__name__)
+
 user_dict = {}
 user_result = []
 
@@ -325,6 +324,7 @@ if __name__ == "__main__":
     schedule.every().day.at("22:00").do(watchlist_search())
     schedule.every().day.at("7:00").do(watchlist_search())
     Thread(target=schedule_checker).start()
+    server.debug = True
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
 
 
