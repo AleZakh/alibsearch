@@ -316,6 +316,8 @@ def schedule_checker():
         time.sleep(60)
 
 # Server side
+
+
 @server.route('/' + token, methods=['POST'])
 def getMessage():
     json_string = request.get_data().decode('utf-8')
@@ -337,7 +339,7 @@ if __name__ == "__main__":
     #    Thread(target=schedule_checker).start()
 
     server.debug = True
-    server.run(host="0.0.0.0", port=os.environ.get('PORT', 80))
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
 
 
 # bot.infinity_polling()
