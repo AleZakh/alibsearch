@@ -148,7 +148,7 @@ def search_result(msg):
             user_result.extend(list(filter(lambda c: c[:][2] <= user_dict[msg.chat.id]['price'], user_list)))
             user_dict[msg.chat.id]['result_pages'] = len(user_result) // 5 if len(user_result) % 5 == 0 \
                 else len(user_result) // 5 + 1
-        show_result(0, msg.chat.id)
+            show_result(0, msg.chat.id)
 
 
 def show_result(page_number, chat_id):
