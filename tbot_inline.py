@@ -19,6 +19,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 # with open('bot_token.txt') as t:
 #    token = t.read()
 
+PORT = int(os.environ.get('PORT', 5000))
 token = os.environ['token']
 logging.info(token)
 bot = telebot.TeleBot(token, parse_mode=None)
