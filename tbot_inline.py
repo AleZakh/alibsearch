@@ -315,16 +315,6 @@ def schedule_checker():
         schedule.run_pending()
         time.sleep(60)
 
-
-if __name__ == "__main__":
-    #    schedule.every().day.at("22:00").do(watchlist_search())
-    #    schedule.every().day.at("7:00").do(watchlist_search())
-    #    Thread(target=schedule_checker).start()
-
-    server.debug = True
-    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
-
-
 # Server side
 
 @server.route('/' + token, methods=['POST'])
@@ -336,8 +326,16 @@ def getMessage():
 @server.route("/")
 def webhook():
     bot.remove_webhook()
-    bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/')
+    bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/'+token)
     return "!", 200
+
+if __name__ == "__main__":
+    #    schedule.every().day.at("22:00").do(watchlist_search())
+    #    schedule.every().day.at("7:00").do(watchlist_search())
+    #    Thread(target=schedule_checker).start()
+
+    server.debug = True
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
 
 
 # bot.infinity_polling()
