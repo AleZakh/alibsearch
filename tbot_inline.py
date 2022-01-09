@@ -12,23 +12,22 @@ import schedule
 import time
 import os
 from flask import Flask, request
-import dotenv
-from dotenv import load_dotenv
 
-load_dotenv()
-token = os.getenv('token')
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 PORT = int(os.environ.get('PORT', 5000))
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-user_dict = {}
-user_result = []
+token = os.environ['TOKEN']
+logging.info(token)
 
 # with open('bot_token.txt') as t:
 #    token = t.read()
 
 bot = telebot.TeleBot(token, parse_mode=None)
 server = Flask(__name__)
+user_dict = {}
+user_result = []
 
 
 @bot.callback_query_handler(func=lambda call: True)
