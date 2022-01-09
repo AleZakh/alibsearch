@@ -15,6 +15,9 @@ from flask import Flask, request
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
+logger = telebot.logger
+telebot.logger.setLevel(logging.DEBUG)
+
 # with open('bot_token.txt') as t:
 #    token = t.read()
 
