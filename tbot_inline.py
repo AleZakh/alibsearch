@@ -15,9 +15,6 @@ from flask import Flask, request
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-logger = telebot.logger
-telebot.logger.setLevel(logging.DEBUG)
-
 # with open('bot_token.txt') as t:
 #    token = t.read()
 
@@ -30,6 +27,7 @@ server = Flask(__name__)
 user_dict = {}
 user_result = []
 
+# Bot functions
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
@@ -318,8 +316,9 @@ def schedule_checker():
         schedule.run_pending()
         time.sleep(60)
 
-# Server side
+# bot.infinity_polling()
 
+# Server side
 
 @server.route('/' + token, methods=['POST'])
 def getMessage():
@@ -329,7 +328,7 @@ def getMessage():
     return "!", 200
 
 
-@server.route("/")
+@server.route('/')
 def webhook():
     bot.remove_webhook()
     bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
@@ -345,4 +344,3 @@ if __name__ == "__main__":
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
 
 
-# bot.infinity_polling()
