@@ -18,7 +18,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 PORT = int(os.environ.get('PORT', 5000))
 
-token = os.environ['TOKEN']
+token = os.environ['token']
 logging.info(token)
 
 # with open('bot_token.txt') as t:
