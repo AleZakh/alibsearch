@@ -13,7 +13,6 @@ import time
 import os
 from flask import Flask, request
 
-
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # with open('bot_token.txt') as t:
@@ -287,6 +286,7 @@ def telegram_parser_format(txt):
         txt = txt.replace(i, '\\' + i)
     return txt
 
+
 def watchlist_search():
     with open('watchlist.csv', newline='', encoding='utf-8') as wl:
         reader = csv.reader(wl)
@@ -317,12 +317,13 @@ def schedule_checker():
 
 
 if __name__ == "__main__":
-#    schedule.every().day.at("22:00").do(watchlist_search())
-#    schedule.every().day.at("7:00").do(watchlist_search())
-#    Thread(target=schedule_checker).start()
+    #    schedule.every().day.at("22:00").do(watchlist_search())
+    #    schedule.every().day.at("7:00").do(watchlist_search())
+    #    Thread(target=schedule_checker).start()
 
     server.debug = True
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+
 
 # Server side
 
@@ -338,4 +339,5 @@ def webhook():
     bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
     return "!", 200
 
-bot.infinity_polling()
+
+# bot.infinity_polling()
