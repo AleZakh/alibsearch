@@ -287,10 +287,6 @@ def telegram_parser_format(txt):
         txt = txt.replace(i, '\\' + i)
     return txt
 
-
-bot.infinity_polling()
-
-
 def watchlist_search():
     with open('watchlist.csv', newline='', encoding='utf-8') as wl:
         reader = csv.reader(wl)
@@ -341,3 +337,5 @@ def webhook():
     bot.remove_webhook()
     bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
     return "!", 200
+
+bot.infinity_polling()
