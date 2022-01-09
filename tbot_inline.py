@@ -329,6 +329,7 @@ def webhook():
     bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/'+token)
     return "!", 200
 
+
 if __name__ == "__main__":
     #    schedule.every().day.at("22:00").do(watchlist_search())
     #    schedule.every().day.at("7:00").do(watchlist_search())
