@@ -10,8 +10,15 @@ import logging
 from threading import Thread
 import schedule
 import time
-from boto.s3.connection import S3Connection
 import os
+from flask import Flask, request
+import dotenv
+from dotenv import load_dotenv
+
+load_dotenv()
+token = os.getenv('token')
+
+PORT = int(os.environ.get('PORT', 5000))
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 user_dict = {}
@@ -19,8 +26,9 @@ user_result = []
 
 # with open('bot_token.txt') as t:
 #    token = t.read()
-token = S3Connection(os.environ['token'])
+
 bot = telebot.TeleBot(token, parse_mode=None)
+server = Flask(__name__)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -318,5 +326,19 @@ if __name__ == "__main__":
     schedule.every().day.at("22:00").do(watchlist_search())
     schedule.every().day.at("7:00").do(watchlist_search())
     Thread(target=schedule_checker).start()
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
 
-    # server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+
+# Server side
+
+@server.route('/' + token, methods=['POST'])
+def getMessage():
+    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    return "!", 200
+
+
+@server.route("/")
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url='https://git.heroku.com/alibru-search-bot.git' + token)
+    return "!", 200
