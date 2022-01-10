@@ -2,16 +2,19 @@
 # -*- coding: utf-8 -*-
 # Code for telegram-bor @alibru_search_bot.
 
-import alib_search
-import telebot
-from telebot import types
+
 import csv
 import logging
 from threading import Thread
-import schedule
 import time
 import os
+
+import schedule
 from flask import Flask, request
+import telebot
+from telebot import types
+
+import alib_search
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
@@ -326,14 +329,16 @@ def getMessage():
     json_string = request.get_data().decode('utf-8')
     update = telebot.types.Update.de_json(json_string)
     bot.process_new_updates([update])
+    server.logger.info(update)
+
     return "!", 200
 
 
 @server.route('/')
 def webhook():
     bot.remove_webhook()
-    webhook = bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
-    logging.debug(webhook)
+    wh = bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
+    server.logger.info(wh)
     return "!", 200
 
 
