@@ -13,7 +13,7 @@ import time
 import os
 from flask import Flask, request
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.debug)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
 # with open('bot_token.txt') as t:
 #    token = t.read()
@@ -332,7 +332,7 @@ def getMessage():
 @server.route('/')
 def webhook():
     bot.remove_webhook()
-    webhook=bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
+    webhook = bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
     logging.debug(webhook)
     return "!", 200
 
