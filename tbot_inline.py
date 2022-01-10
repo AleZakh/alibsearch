@@ -331,7 +331,8 @@ def getMessage():
 @server.route('/')
 def webhook():
     bot.remove_webhook()
-    bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
+    webhook=bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
+    logging.info(webhook)
     return "!", 200
 
 
