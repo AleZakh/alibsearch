@@ -23,6 +23,7 @@ logging.info(token)
 bot = telebot.TeleBot(token)
 
 server = Flask(__name__)
+logging.debug(server)
 
 user_dict = {}
 user_result = []
@@ -332,7 +333,7 @@ def getMessage():
 def webhook():
     bot.remove_webhook()
     webhook=bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
-    logging.info(webhook)
+    logging.debug(webhook)
     return "!", 200
 
 
@@ -342,6 +343,6 @@ if __name__ == "__main__":
     #    Thread(target=schedule_checker).start()
 
     server.debug = True
-    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 80)))
 
 
