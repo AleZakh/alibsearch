@@ -334,12 +334,18 @@ def getMessage():
     return "!", 200
 
 
+@server.route('/')
+def webhook():
+    bot.remove_webhook()
+    wh = bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
+    return "!", 200
+
+
 if __name__ == "__main__":
     #    schedule.every().day.at("22:00").do(watchlist_search())
     #    schedule.every().day.at("7:00").do(watchlist_search())
     #    Thread(target=schedule_checker).start()
-    bot.remove_webhook()
-    bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
+
     server.debug = True
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 80)))
 
