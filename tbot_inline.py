@@ -160,7 +160,7 @@ def show_result(page_number, chat_id):
     logging.info(page_number)
     result_message_text = ''
 
-    for i in user_result[page_number * 5:page_number * 5 + 5 if page_number * 5 + 5 <= len(user_result) - 1 else len(user_result) - 1]:
+    for i in user_result[page_number * 5:page_number * 5 + 5 if page_number * 5 + 5 <= len(user_result)-1 else len(user_result)]:
         # while i != page_number * 5 + 5 and i <= len(user_result) - 1:
         name = telegram_parser_format(i[0])
         price = i[2]
