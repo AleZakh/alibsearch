@@ -22,7 +22,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 #    token = t.read()
 
 token = os.environ['token']
-logging.info(token)
+logging.debug(token)
 bot = telebot.TeleBot(token)
 
 server = Flask(__name__)
@@ -30,6 +30,7 @@ logging.debug(server)
 
 user_dict = {}
 user_result = []
+
 
 # Bot functions
 
@@ -121,6 +122,7 @@ def add_to_watchlist(msg):
 
 
 def search_result(msg):
+    user_result.clear()
     bot.send_message(user_dict[msg.chat.id]['chat_id'], 'looking for it...')
     bot.send_chat_action(user_dict[msg.chat.id]['chat_id'], 'typing')
 
@@ -157,13 +159,13 @@ def search_result(msg):
 def show_result(page_number, chat_id):
     logging.info(page_number)
     result_message_text = ''
-    i = page_number * 5
-    while i != page_number * 5 + 5 and i <= len(user_result) - 1:
-        name = telegram_parser_format(user_result[i][0])
-        price = user_result[i][2]
-        link = user_result[i][3]
+
+    for i in user_result[page_number * 5:page_number * 5 + 5 if page_number * 5 + 5 <= len(user_result) - 1 else len(user_result) - 1]:
+        # while i != page_number * 5 + 5 and i <= len(user_result) - 1:
+        name = telegram_parser_format(i[0])
+        price = i[2]
+        link = i[3]
         result_message_text += f'📔 {name}, price *{price}* rub, [link]({link}) \n \n '
-        i = i + 1
     if 'is_result_msg' in user_dict[chat_id].keys():
         bot.edit_message_text(result_message_text,
                               message_id=user_dict[chat_id]['last_message_id'],
@@ -293,6 +295,7 @@ def telegram_parser_format(txt):
 
 
 def watchlist_search():
+    user_result.clear()
     with open('watchlist.csv', newline='', encoding='utf-8') as wl:
         reader = csv.reader(wl)
         watchlist = list(reader)
@@ -309,8 +312,6 @@ def watchlist_search():
                 user_dict[row[0]]['result_pages'] = len(user_result) // 5 if len(user_result) % 5 == 0 \
                     else len(user_result) // 5 + 1
                 show_result(0, row[0])
-
-
     except Exception as e:
         logging.info(e)
 
@@ -320,12 +321,13 @@ def schedule_checker():
         schedule.run_pending()
         time.sleep(60)
 
+
 # bot.infinity_polling()
 
 # Server side
 
 @server.route('/' + token, methods=['POST'])
-def getMessage():
+def get_message():
     json_string = request.get_data().decode('utf-8')
     update = telebot.types.Update.de_json(json_string)
     bot.process_new_updates([update])
@@ -337,7 +339,7 @@ def getMessage():
 @server.route('/')
 def webhook():
     bot.remove_webhook()
-    wh = bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
+    bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
     return "!", 200
 
 
@@ -348,5 +350,3 @@ if __name__ == "__main__":
 
     server.debug = True
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 80)))
-
-
