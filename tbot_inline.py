@@ -118,7 +118,7 @@ def add_to_watchlist(msg):
             - I inform you, if something in you price range is found.
                     ''', reply_markup=return_markup())
     user_dict[msg.chat.id]['last_message_id'] = msg.message_id
-    logging.info(f'!!!redis test get command: {r.lrange(msg.chat.id),0,r.llen(msg.chat.id)}')
+    logging.info(f'!!!redis test get command: {r.lrange(msg.chat.id,0,r.llen(msg.chat.id))}')
 
 
 def search_result(msg):
