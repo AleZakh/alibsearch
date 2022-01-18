@@ -185,10 +185,6 @@ def show_result(page_number, chat_id):
 
 def show_watchlist(chat_id):
     wl_msg_text = ''
-
-    watchlist = list(r.range)
-
-    logging.info(watchlist)
     for i in range(0,r.llen(chat_id),2):
         wl_msg_text += f'📔 {r.lindex(chat_id,i)}, price *<{r.lindex(chat_id,i+1)}* rub \n \n '
     if len(wl_msg_text) > 0:
