@@ -196,18 +196,18 @@ def show_watchlist(chat_id):
         for row in watchlist:
             if int(row[0]) == chat_id:
                 wl_msg_text += f'📔 {row[1]}, price *<{row[2]}* rub \n \n '
-        if len(wl_msg_text) > 0:
-            msg = bot.send_message(chat_id,
+    if len(wl_msg_text) > 0:
+        msg = bot.send_message(chat_id,
                                    text='Your watchlist: \n \n' + wl_msg_text,
                                    parse_mode='MarkdownV2',
                                    disable_web_page_preview=True,
                                    reply_markup=watchlist_markup())
 
-        else:
-            msg = bot.send_message(chat_id,
+    else:
+        msg = bot.send_message(chat_id,
                                    text='Your watchlist is empty'+r.get("test_id"),
                                    reply_markup=return_markup())
-        user_dict[chat_id]['last_message_id'] = msg.message_id
+    user_dict[chat_id]['last_message_id'] = msg.message_id
 
 
 def clear_watchlist(chat_id):
