@@ -110,7 +110,6 @@ def result_step(message):
 
 
 def add_to_watchlist(msg):
-    #r.delete(user_dict[msg.chat.id]["chat_id"])
     r.lpush(user_dict[msg.chat.id]["chat_id"],user_dict[msg.chat.id]["query"],user_dict[msg.chat.id]["price"])
     msg = bot.send_message(user_dict[msg.chat.id]["chat_id"], f''' 
             ✍🏻 {user_dict[msg.chat.id]["query"]} by less then {user_dict[msg.chat.id]["price"]} rub added to watchlist
@@ -186,13 +185,12 @@ def show_result(page_number, chat_id):
 
 def show_watchlist(chat_id):
     wl_msg_text = ''
-    with open('watchlist.csv', newline='', encoding='utf-8') as wl:
-        reader = csv.reader(wl)
-        watchlist = list(reader)
-        logging.info(watchlist)
-        for row in watchlist:
-            if int(row[0]) == chat_id:
-                wl_msg_text += f'📔 {row[1]}, price *<{row[2]}* rub \n \n '
+
+    watchlist = list(r.range)
+
+    logging.info(watchlist)
+    for i in range(0,r.llen(chat_id),2):
+        wl_msg_text += f'📔 {r.lindex(chat_id,i)}, price *<{r.lindex(chat_id,i+1)}* rub \n \n '
     if len(wl_msg_text) > 0:
         msg = bot.send_message(chat_id,
                                    text='Your watchlist: \n \n' + wl_msg_text,
