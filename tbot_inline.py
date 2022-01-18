@@ -25,7 +25,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 token = os.environ['token']
 r = redis.from_url(os.environ.get("REDIS_URL"))
 r.mset({'test_id': 'hello world!'})
-r.get("test_id")
+logging.debug(r.get("test_id"))
 
 bot = telebot.TeleBot(token)
 
