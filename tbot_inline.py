@@ -60,6 +60,7 @@ def send_welcome(message):
     user_dict[message.chat.id] = {}
     user_dict[message.chat.id]['chat_id'] = message.chat.id
     logging.info(user_dict)
+    logging.info(f'!!!redis test get command: {r.get(message.chat.id).decode("utf-8")}')
     msg = bot.reply_to(message, """\
 Hi!
 Do you want to search for books or add one to a watchlist?
