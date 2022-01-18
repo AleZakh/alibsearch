@@ -110,7 +110,7 @@ def result_step(message):
 
 
 def add_to_watchlist(msg):
-    r.lpush(user_dict[msg.chat.id]["chat_id"],user_dict[msg.chat.id]["query"],user_dict[msg.chat.id]["price"])
+    r.rpush(user_dict[msg.chat.id]["chat_id"],user_dict[msg.chat.id]["query"],user_dict[msg.chat.id]["price"])
     msg = bot.send_message(user_dict[msg.chat.id]["chat_id"], f''' 
             ✍🏻 {user_dict[msg.chat.id]["query"]} by less then {user_dict[msg.chat.id]["price"]} rub added to watchlist
             - Database updates every 09:00 and 23:00 (GMT+3)
@@ -186,7 +186,8 @@ def show_result(page_number, chat_id):
 def show_watchlist(chat_id):
     wl_msg_text = ''
     for i in range(0,r.llen(chat_id),2):
-        wl_msg_text += f'📔 {r.lindex(chat_id,i)}, price *<{r.lindex(chat_id,i+1)}* rub \n \n '
+        wl_msg_text += f'📔 {r.lindex(chat_id,i).decode("utf-8")},' \
+                       f' price *<{r.lindex(chat_id,i+1).decode("utf-8")}* rub \n \n '
     if len(wl_msg_text) > 0:
         msg = bot.send_message(chat_id,
                                    text='Your watchlist: \n \n' + wl_msg_text,
