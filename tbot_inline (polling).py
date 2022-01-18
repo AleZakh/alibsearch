@@ -10,27 +10,19 @@ import time
 import os
 
 import schedule
-from flask import Flask, request
 import telebot
 from telebot import types
-import redis
 
 import alib_search
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
-
-
+with open('bot_token.txt') as t:
+    token = t.read()
 
 token = os.environ['token']
-r = redis.from_url(os.environ.get("REDIS_URL"))
-r.mset({'test_id': 'hello world!'})
-r.get("test_id")
-
+logging.debug(token)
 bot = telebot.TeleBot(token)
-
-server = Flask(__name__)
-logging.debug(server)
 
 user_dict = {}
 user_result = []
@@ -164,7 +156,8 @@ def show_result(page_number, chat_id):
     logging.info(page_number)
     result_message_text = ''
 
-    for i in user_result[page_number * 5:page_number * 5 + 5 if page_number * 5 + 5 <= len(user_result)-1 else len(user_result)]:
+    for i in user_result[
+             page_number * 5:page_number * 5 + 5 if page_number * 5 + 5 <= len(user_result) - 1 else len(user_result)]:
         # while i != page_number * 5 + 5 and i <= len(user_result) - 1:
         name = telegram_parser_format(i[0])
         price = i[2]
@@ -326,29 +319,9 @@ def schedule_checker():
         time.sleep(60)
 
 
-# Server side
-
-@server.route('/' + token, methods=['POST'])
-def get_message():
-    json_string = request.get_data().decode('utf-8')
-    update = telebot.types.Update.de_json(json_string)
-    bot.process_new_updates([update])
-    server.logger.info(update)
-
-    return "!", 200
-
-
-@server.route('/')
-def webhook():
-    bot.remove_webhook()
-    bot.set_webhook(url='https://alibru-search-bot.herokuapp.com/' + token)
-    return "!", 200
-
-
 if __name__ == "__main__":
-    #    schedule.every().day.at("22:00").do(watchlist_search())
-    #    schedule.every().day.at("7:00").do(watchlist_search())
-    #    Thread(target=schedule_checker).start()
+    schedule.every().day.at("22:00").do(watchlist_search())
+    schedule.every().day.at("7:00").do(watchlist_search())
+    Thread(target=schedule_checker).start()
 
-    server.debug = True
-    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 80)))
+# bot.infinity_polling()
