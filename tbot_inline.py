@@ -25,7 +25,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 token = os.environ['token']
 r = redis.from_url(os.environ.get("REDIS_URL"))
 r.mset({'test_id': 'hello world!'})
-logging.debug(r.get("test_id"))
 
 bot = telebot.TeleBot(token)
 
@@ -189,11 +188,11 @@ def show_result(page_number, chat_id):
 
 
 def show_watchlist(chat_id):
+    wl_msg_text = ''
     with open('watchlist.csv', newline='', encoding='utf-8') as wl:
         reader = csv.reader(wl)
         watchlist = list(reader)
         logging.info(watchlist)
-        wl_msg_text = ''
         for row in watchlist:
             if int(row[0]) == chat_id:
                 wl_msg_text += f'📔 {row[1]}, price *<{row[2]}* rub \n \n '
@@ -206,7 +205,7 @@ def show_watchlist(chat_id):
 
         else:
             msg = bot.send_message(chat_id,
-                                   text='Your watchlist is empty',
+                                   text='Your watchlist is empty'+r.get("test_id"),
                                    reply_markup=return_markup())
         user_dict[chat_id]['last_message_id'] = msg.message_id
 
