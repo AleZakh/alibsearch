@@ -3,7 +3,6 @@
 # Code for telegram-bor @alibru_search_bot.
 
 
-import csv
 import logging
 from threading import Thread
 import time
@@ -18,9 +17,6 @@ import redis
 import alib_search
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
-
-
-
 
 token = os.environ['token']
 r = redis.from_url(os.environ.get("REDIS_URL"))
@@ -110,14 +106,14 @@ def result_step(message):
 
 
 def add_to_watchlist(msg):
-    r.rpush(user_dict[msg.chat.id]["chat_id"],user_dict[msg.chat.id]["query"],user_dict[msg.chat.id]["price"])
+    r.rpush(user_dict[msg.chat.id]["chat_id"], user_dict[msg.chat.id]["query"], user_dict[msg.chat.id]["price"])
     msg = bot.send_message(user_dict[msg.chat.id]["chat_id"], f''' 
             ✍🏻 {user_dict[msg.chat.id]["query"]} by less then {user_dict[msg.chat.id]["price"]} rub added to watchlist
             - Database updates every 09:00 and 23:00 (GMT+3)
             - I inform you, if something in you price range is found.
                     ''', reply_markup=return_markup())
     user_dict[msg.chat.id]['last_message_id'] = msg.message_id
-    logging.info(f'!!!redis test get command: {r.lrange(msg.chat.id,0,r.llen(msg.chat.id))}')
+    logging.info(f'!!!redis test get command: {r.lrange(msg.chat.id, 0, r.llen(msg.chat.id))}')
 
 
 def search_result(msg):
@@ -159,7 +155,8 @@ def show_result(page_number, chat_id):
     logging.info(page_number)
     result_message_text = ''
 
-    for i in user_result[page_number * 5:page_number * 5 + 5 if page_number * 5 + 5 <= len(user_result)-1 else len(user_result)]:
+    for i in user_result[
+             page_number * 5:page_number * 5 + 5 if page_number * 5 + 5 <= len(user_result) - 1 else len(user_result)]:
         # while i != page_number * 5 + 5 and i <= len(user_result) - 1:
         name = telegram_parser_format(i[0])
         price = i[2]
@@ -185,34 +182,25 @@ def show_result(page_number, chat_id):
 
 def show_watchlist(chat_id):
     wl_msg_text = ''
-    for i in range(0,r.llen(chat_id),2):
-        wl_msg_text += f'📔 {r.lindex(chat_id,i).decode("utf-8")},' \
-                       f' price *<{r.lindex(chat_id,i+1).decode("utf-8")}* rub \n \n '
+    for i in range(0, r.llen(chat_id), 2):
+        wl_msg_text += f'📔 {r.lindex(chat_id, i).decode("utf-8")},' \
+                       f' price *<{r.lindex(chat_id, i + 1).decode("utf-8")}* rub \n \n '
     if len(wl_msg_text) > 0:
         msg = bot.send_message(chat_id,
-                                   text='Your watchlist: \n \n' + wl_msg_text,
-                                   parse_mode='MarkdownV2',
-                                   disable_web_page_preview=True,
-                                   reply_markup=watchlist_markup())
+                               text='Your watchlist: \n \n' + wl_msg_text,
+                               parse_mode='MarkdownV2',
+                               disable_web_page_preview=True,
+                               reply_markup=watchlist_markup())
 
     else:
         msg = bot.send_message(chat_id,
-                                   text='Your watchlist is empty',
-                                   reply_markup=return_markup())
+                               text='Your watchlist is empty',
+                               reply_markup=return_markup())
     user_dict[chat_id]['last_message_id'] = msg.message_id
 
 
 def clear_watchlist(chat_id):
-    with open('watchlist.csv', 'r', encoding='utf-8', newline='') as wl1:
-        reader = csv.reader(wl1)
-        wl = list(reader)
-
-    with open('watchlist.csv', 'w', encoding='utf-8', newline='') as wl2:
-        writer = csv.writer(wl2)
-        for row in wl:
-            if int(row[0]) != chat_id:
-                writer.writerow(row)
-
+    r.delete(chat_id)
     msg = bot.send_message(chat_id,
                            text='Your watchlist is cleared',
                            reply_markup=return_markup())
@@ -291,14 +279,16 @@ def telegram_parser_format(txt):
 
 def watchlist_search():
     user_result.clear()
-    with open('watchlist.csv', newline='', encoding='utf-8') as wl:
-        reader = csv.reader(wl)
-        watchlist = list(reader)
-        logging.info(watchlist)
+    watchlist = []
+    for chat_id in r.keys():
+        for i in range(0, r.llen(chat_id), 2):
+            watchlist.append([r.lindex(chat_id, i), r.lindex(chat_id, i + 1)])
     try:
         for row in watchlist:
-            user_list = (list(filter(lambda c: c[:][2] <= watchlist, alib_search.main(row[1]))))
+            user_list = (list(filter(lambda c: c[:][1] <= watchlist, alib_search.main(row[0]))))
+            logging.info('!!!!!!!!!!!!!')
             logging.info(user_list)
+            logging.info('!!!!!!!!!!!!!')
             if len(user_list) > 0:
                 msg = bot.send_message(row[0], 'Your watchlist query was found!')
                 user_dict[row[0]]['last_message_id'] = msg.message_id
@@ -337,9 +327,9 @@ def webhook():
 
 
 if __name__ == "__main__":
-    #    schedule.every().day.at("22:00").do(watchlist_search())
-    #    schedule.every().day.at("7:00").do(watchlist_search())
-    #    Thread(target=schedule_checker).start()
+    schedule.every().day.at("23:00").do(watchlist_search())
+    schedule.every().day.at("8:00").do(watchlist_search())
+    Thread(target=schedule_checker).start()
 
     server.debug = True
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 80)))
