@@ -20,7 +20,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 with open('bot_token.txt') as t:
     token = t.read()
 
-token = os.environ['token']
 logging.debug(token)
 bot = telebot.TeleBot(token)
 
@@ -320,8 +319,8 @@ def schedule_checker():
 
 
 if __name__ == "__main__":
-    schedule.every().day.at("22:00").do(watchlist_search())
-    schedule.every().day.at("7:00").do(watchlist_search())
+    schedule.every().day.at("22:00").do(watchlist_search)
+    schedule.every().day.at("07:00").do(watchlist_search)
     Thread(target=schedule_checker).start()
 
-# bot.infinity_polling()
+bot.infinity_polling()

@@ -327,8 +327,8 @@ def webhook():
 
 
 if __name__ == "__main__":
-    schedule.every().day.at("23:00").do(watchlist_search())
-    schedule.every().day.at("8:00").do(watchlist_search())
+    schedule.every().day.at("23:00").do(watchlist_search)
+    schedule.every().day.at("08:00").do(watchlist_search)
     Thread(target=schedule_checker).start()
 
     server.debug = True
