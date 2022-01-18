@@ -23,7 +23,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 
 token = os.environ['token']
-r = redis.from_url(os.environ.get("REDIS_URL"))
+r = redis.from_url(os.environ.get("REDIS_URL"),db=5)
 logging.info(f'!!!redis ping: {r.ping()}')
 bot = telebot.TeleBot(token)
 
@@ -111,7 +111,7 @@ def result_step(message):
 
 def add_to_watchlist(msg):
     #r.delete(user_dict[msg.chat.id]["chat_id"])
-    r.lpush(str(user_dict[msg.chat.id]["chat_id"]),user_dict[msg.chat.id]["query"])
+    r.lpush(user_dict[msg.chat.id]["chat_id"],user_dict[msg.chat.id]["query"])
     msg = bot.send_message(user_dict[msg.chat.id]["chat_id"], f''' 
             ✍🏻 {user_dict[msg.chat.id]["query"]} by less then {user_dict[msg.chat.id]["price"]} rub added to watchlist
             - Database updates every 09:00 and 23:00 (GMT+3)
