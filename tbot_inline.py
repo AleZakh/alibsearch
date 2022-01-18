@@ -25,8 +25,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 token = os.environ['token']
 r = redis.from_url(os.environ.get("REDIS_URL"))
 logging.info(f'!!!redis ping: {r.ping()}')
-r.set('test_id','hello world!')
-logging.info(f'!!!redis test get command: {r.get("test_id")}')
 bot = telebot.TeleBot(token)
 
 server = Flask(__name__)
@@ -112,17 +110,17 @@ def result_step(message):
 
 
 def add_to_watchlist(msg):
-    with open('watchlist.csv', 'a+', encoding='utf-8', newline='') as wl:
-        writer = csv.writer(wl)
-        writer.writerow([user_dict[msg.chat.id]["chat_id"],
-                         user_dict[msg.chat.id]["query"],
-                         user_dict[msg.chat.id]["price"]])
-        msg = bot.send_message(user_dict[msg.chat.id]["chat_id"], f''' 
+
+    r.append(user_dict[msg.chat.id]["chat_id"],
+            [user_dict[msg.chat.id]["query"],
+            user_dict[msg.chat.id]["price"]])
+    msg = bot.send_message(user_dict[msg.chat.id]["chat_id"], f''' 
             ✍🏻 {user_dict[msg.chat.id]["query"]} by less then {user_dict[msg.chat.id]["price"]} rub added to watchlist
             - Database updates every 09:00 and 23:00 (GMT+3)
             - I inform you, if something in you price range is found.
                     ''', reply_markup=return_markup())
-        user_dict[msg.chat.id]['last_message_id'] = msg.message_id
+    user_dict[msg.chat.id]['last_message_id'] = msg.message_id
+    logging.info(f'!!!redis test get command: {r.get(msg.chat.id)}')
 
 
 def search_result(msg):
