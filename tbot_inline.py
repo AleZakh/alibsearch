@@ -24,8 +24,9 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 token = os.environ['token']
 r = redis.from_url(os.environ.get("REDIS_URL"))
+logging.info(r.ping())
 r.mset({'test_id': 'hello world!'})
-
+r.get("test_id")
 bot = telebot.TeleBot(token)
 
 server = Flask(__name__)
@@ -198,7 +199,7 @@ def show_watchlist(chat_id):
                 wl_msg_text += f'📔 {row[1]}, price *<{row[2]}* rub \n \n '
     if len(wl_msg_text) > 0:
         msg = bot.send_message(chat_id,
-                                   text=r.get("test_id")+'Your watchlist: \n \n' + wl_msg_text,
+                                   text='Your watchlist: \n \n' + wl_msg_text,
                                    parse_mode='MarkdownV2',
                                    disable_web_page_preview=True,
                                    reply_markup=watchlist_markup())
