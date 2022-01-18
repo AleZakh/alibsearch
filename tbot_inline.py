@@ -24,9 +24,9 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 token = os.environ['token']
 r = redis.from_url(os.environ.get("REDIS_URL"))
-logging.info(r.ping())
-r.mset({'test_id': 'hello world!'})
-r.get("test_id")
+logging.info(f'!!!redis ping: {r.ping()}')
+r.mset({'test_id','hello world!'})
+logging.info(f'!!!redis test get command: {r.get("test_id")}')
 bot = telebot.TeleBot(token)
 
 server = Flask(__name__)
