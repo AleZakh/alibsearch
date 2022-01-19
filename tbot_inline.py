@@ -282,7 +282,7 @@ def watchlist_search():
     watchlist = []
     for chat_id in r.keys():
         for i in range(0, r.llen(chat_id), 2):
-            watchlist.append([r.lindex(chat_id, i), r.lindex(chat_id, i + 1)])
+            watchlist.append([r.lindex(chat_id, i).decode('utf-8'), r.lindex(chat_id, i + 1).decode('utf-8')])
     try:
         for row in watchlist:
             user_list = (list(filter(lambda c: c[:][1] <= watchlist, alib_search.main(row[0]))))
