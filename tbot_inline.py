@@ -285,6 +285,7 @@ def watchlist_search():
             watchlist.append([int(chat_id),
                               r.lindex(chat_id, i).decode('utf-8'),
                               int(r.lindex(chat_id, i + 1))])
+    logging.info(watchlist)
     try:
         for row in watchlist:
             user_list = []
