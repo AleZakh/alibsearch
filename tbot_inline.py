@@ -157,7 +157,6 @@ def show_result(page_number, chat_id):
 
     for i in user_result[
              page_number * 5:page_number * 5 + 5 if page_number * 5 + 5 <= len(user_result) - 1 else len(user_result)]:
-        # while i != page_number * 5 + 5 and i <= len(user_result) - 1:
         name = telegram_parser_format(i[0])
         price = i[2]
         link = i[3]
@@ -285,7 +284,7 @@ def watchlist_search():
             watchlist.append([r.lindex(chat_id, i).decode('utf-8'), r.lindex(chat_id, i + 1).decode('utf-8')])
     try:
         for row in watchlist:
-            user_list = (list(filter(lambda c: c[:][1] <= watchlist, alib_search.main(row[0]))))
+            user_list = (list(filter(lambda c: c[:][2] <= int(row[1]), alib_search.main(row[0]))))
             logging.info('!!!!!!!!!!!!!')
             logging.info(user_list)
             logging.info('!!!!!!!!!!!!!')
@@ -327,8 +326,10 @@ def webhook():
 
 
 if __name__ == "__main__":
-    schedule.every().day.at("23:00").do(watchlist_search)
-    schedule.every().day.at("08:00").do(watchlist_search)
+    schedule.every(10).minutes.do(watchlist_search)
+
+#    schedule.every().day.at("23:00").do(watchlist_search)
+#    schedule.every().day.at("08:00").do(watchlist_search)
     Thread(target=schedule_checker).start()
 
     server.debug = True
