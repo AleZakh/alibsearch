@@ -277,11 +277,12 @@ def telegram_parser_format(txt):
 
 
 def watchlist_search():
+    logging.info('Scheduled search started')
     user_result.clear()
     watchlist = []
     for chat_id in r.keys():
         for i in range(0, r.llen(chat_id), 2):
-            watchlist.append([int(chat_id.decode('utf-8')),
+            watchlist.append([int(chat_id),
                               r.lindex(chat_id, i).decode('utf-8'),
                               int(r.lindex(chat_id, i + 1).decode('utf-8'))])
     try:
