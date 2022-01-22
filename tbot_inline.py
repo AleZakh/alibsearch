@@ -288,7 +288,6 @@ def watchlist_search():
     logging.info(watchlist)
     try:
         for row in watchlist:
-            user_list = []
             user_list = (list(filter(lambda c: c[:][2] <= row[2], alib_search.main(row[1]))))
             logging.info('!!!!!!!!!!!!!')
             logging.info(user_list)
@@ -331,10 +330,8 @@ def webhook():
 
 
 if __name__ == "__main__":
-    schedule.every(10).minutes.do(watchlist_search)
-
-#    schedule.every().day.at("23:00").do(watchlist_search)
-#    schedule.every().day.at("08:00").do(watchlist_search)
+    schedule.every().day.at("23:00").do(watchlist_search)
+    schedule.every().day.at("08:00").do(watchlist_search)
     Thread(target=schedule_checker).start()
 
     server.debug = True
